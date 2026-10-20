@@ -1,0 +1,5 @@
+{
+  "service": "payments",
+  "port": 8002,
+  "log_level": "info"
+}

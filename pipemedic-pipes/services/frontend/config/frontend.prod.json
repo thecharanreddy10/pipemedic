@@ -1,0 +1,5 @@
+{
+  "service": "frontend",
+  "port": 8001,
+  "log_level": "info"
+}

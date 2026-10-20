@@ -1,0 +1,13 @@
+diff --git a/services/inventory/app/main.py b/services/inventory/app/main.py
+index bd96121..ebdcd91 100644
+--- a/services/inventory/app/main.py
++++ b/services/inventory/app/main.py
+@@ -12,7 +12,7 @@ def reserve(item: str, qty: int) -> int:
+     if qty <= 0 or qty > STOCK[item]:
+         raise ValueError("insufficient stock")
+     STOCK[item] -= qty
+-    return STOCK[item]
++    return STOCK[item] + 1
+ 
+ 
+ @app.get("/health")

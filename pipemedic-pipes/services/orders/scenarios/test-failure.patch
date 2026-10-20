@@ -1,0 +1,13 @@
+diff --git a/services/orders/app/main.py b/services/orders/app/main.py
+index 3c3a830..a283c7e 100644
+--- a/services/orders/app/main.py
++++ b/services/orders/app/main.py
+@@ -26,7 +26,7 @@ def create_order(item: str, qty: int, amount: float):
+         ).raise_for_status()
+     except httpx.HTTPError as e:
+         raise HTTPException(502, f"downstream failure: {e}")
+-    ORDERS[order_id] = {"id": order_id, "item": item, "qty": qty, "amount": amount, "status": "confirmed"}
++    ORDERS[order_id] = {"id": order_id, "item": item, "qty": qty, "amount": amount, "status": "pending"}
+     return ORDERS[order_id]
+ 
+ 

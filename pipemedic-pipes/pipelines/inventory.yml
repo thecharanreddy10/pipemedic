@@ -1,0 +1,44 @@
+# inventory service: lint, test, benchmark, package, deploy to a runner, smoke test.
+# Run it by hand and pick a scenario to see how PipeMedic explains each kind of failure.
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - services/inventory
+      - pipelines
+
+pr:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - services/inventory
+      - pipelines
+
+parameters:
+  - name: scenario
+    displayName: Failure scenario (demo)
+    type: string
+    default: none
+    values:
+      - none
+      - test-failure
+      - lint-error
+      - dependency-missing
+      - missing-config
+      - network-timeout
+      - flaky-test
+      - permission-denied
+      - memory-hog
+      - cpu-starvation
+      - disk-full
+
+stages:
+  - template: templates/service-ci.yml
+    parameters:
+      service: inventory
+      port: 8003
+      scenario: ${{ parameters.scenario }}

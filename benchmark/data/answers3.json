@@ -1,0 +1,314 @@
+{
+ "d001": {
+  "label": "config",
+  "subtype": "maven-invalid-pom",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d002": {
+  "label": "code-error",
+  "subtype": "js-esm-in-commonjs",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round3"
+ },
+ "d003": {
+  "label": "timeout",
+  "subtype": "go-blocked-test",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d004": {
+  "label": "code-error",
+  "subtype": "java-missing-semicolon",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d005": {
+  "label": "network",
+  "subtype": "go-unreachable-proxy",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d006": {
+  "label": "test-failure",
+  "subtype": "jest-nan",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round3"
+ },
+ "d007": {
+  "label": "dependency",
+  "subtype": "go-missing-module",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d008": {
+  "label": "test-failure",
+  "subtype": "pytest-missing-fixture",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round3"
+ },
+ "d009": {
+  "label": "test-failure",
+  "subtype": "junit-assertion",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d010": {
+  "label": "test-failure",
+  "subtype": "xunit-assertion",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d011": {
+  "label": "test-failure",
+  "subtype": "junit-exception",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d012": {
+  "label": "network",
+  "subtype": "nuget-unreachable-source",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d013": {
+  "label": "code-error",
+  "subtype": "java-cannot-find-symbol",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d014": {
+  "label": "config",
+  "subtype": "docker-missing-file",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round3"
+ },
+ "d015": {
+  "label": "lint",
+  "subtype": "gofmt",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d016": {
+  "label": "config",
+  "subtype": "csproj-invalid-xml",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d017": {
+  "label": "code-error",
+  "subtype": "go-syntax-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d018": {
+  "label": "dependency",
+  "subtype": "maven-missing-artifact",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d019": {
+  "label": "type-error",
+  "subtype": "mypy-return-type",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "round3"
+ },
+ "d020": {
+  "label": "lint",
+  "subtype": "go-vet-printf",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d021": {
+  "label": "other",
+  "subtype": "native-crash",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round3"
+ },
+ "d022": {
+  "label": "type-error",
+  "subtype": "mypy-unused-ignore",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "round3"
+ },
+ "d023": {
+  "label": "code-error",
+  "subtype": "csharp-missing-semicolon",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d024": {
+  "label": "code-error",
+  "subtype": "csharp-missing-member",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d025": {
+  "label": "dependency",
+  "subtype": "nuget-missing-package",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d026": {
+  "label": "code-error",
+  "subtype": "go-undefined-field",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d027": {
+  "label": "dependency",
+  "subtype": "docker-missing-module",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round3"
+ },
+ "d028": {
+  "label": "config",
+  "subtype": "go-invalid-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d029": {
+  "label": "other",
+  "subtype": "custom-error-line",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round3"
+ },
+ "d030": {
+  "label": "test-failure",
+  "subtype": "py-assertion",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round3"
+ },
+ "d031": {
+  "label": "dependency",
+  "subtype": "maven-missing-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d032": {
+  "label": "permissions",
+  "subtype": "docker-user-permissions",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round3"
+ },
+ "d033": {
+  "label": "network",
+  "subtype": "maven-unreachable-repo",
+  "ambiguous": true,
+  "note": "a missing artifact and an unreachable repository appear together",
+  "pipeline": "click-java",
+  "split": "round3"
+ },
+ "d034": {
+  "label": "dependency",
+  "subtype": "nuget-missing-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d035": {
+  "label": "lint",
+  "subtype": "eslint-undefined-variable",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round3"
+ },
+ "d036": {
+  "label": "other",
+  "subtype": "custom-status-message",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round3"
+ },
+ "d037": {
+  "label": "test-failure",
+  "subtype": "go-test-assertion",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round3"
+ },
+ "d038": {
+  "label": "lint",
+  "subtype": "dotnet-format",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round3"
+ },
+ "d039": {
+  "label": "lint",
+  "subtype": "ruff-pyupgrade",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "round3"
+ }
+}

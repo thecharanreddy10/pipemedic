@@ -1,0 +1,210 @@
+{
+ "c001": {
+  "label": "code-error",
+  "subtype": "js-syntax-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c002": {
+  "label": "code-error",
+  "subtype": "tsc-type-error",
+  "ambiguous": true,
+  "note": "tsc is the compiler: compile error or type check",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c003": {
+  "label": "permissions",
+  "subtype": "pull-denied",
+  "ambiguous": true,
+  "note": "a private image that does not exist or needs a login",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c004": {
+  "label": "network",
+  "subtype": "npm-unreachable-registry",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c005": {
+  "label": "dependency",
+  "subtype": "npm-package-not-found",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c006": {
+  "label": "test-failure",
+  "subtype": "jest-assertion",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c007": {
+  "label": "config",
+  "subtype": "invalid-package-json",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c008": {
+  "label": "dependency",
+  "subtype": "pip-package-missing",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c009": {
+  "label": "dependency",
+  "subtype": "apt-package-missing",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c010": {
+  "label": "dependency",
+  "subtype": "npm-no-matching-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c011": {
+  "label": "timeout",
+  "subtype": "jest-open-handle",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c012": {
+  "label": "lint",
+  "subtype": "pylint-no-member",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c013": {
+  "label": "test-failure",
+  "subtype": "jest-test-timeout",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c014": {
+  "label": "code-error",
+  "subtype": "black-syntax-error",
+  "ambiguous": true,
+  "note": "a formatter cannot parse the file: lint or code error",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c015": {
+  "label": "lint",
+  "subtype": "flake8-unused-import",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c016": {
+  "label": "lint",
+  "subtype": "pylint-missing-argument",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c017": {
+  "label": "lint",
+  "subtype": "black-format",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c018": {
+  "label": "config",
+  "subtype": "docker-copy-missing-file",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c019": {
+  "label": "lint",
+  "subtype": "flake8-undefined-name",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c020": {
+  "label": "lint",
+  "subtype": "eslint-missing-semicolon",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c021": {
+  "label": "dependency",
+  "subtype": "conflicting-pins",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-quality2",
+  "split": "round2"
+ },
+ "c022": {
+  "label": "code-error",
+  "subtype": "js-missing-relative-module",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c023": {
+  "label": "dependency",
+  "subtype": "docker-image-tag-missing",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c024": {
+  "label": "network",
+  "subtype": "pip-unreachable-index",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ },
+ "c025": {
+  "label": "lint",
+  "subtype": "eslint-unused-variable",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round2"
+ },
+ "c026": {
+  "label": "config",
+  "subtype": "dockerfile-syntax",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round2"
+ }
+}

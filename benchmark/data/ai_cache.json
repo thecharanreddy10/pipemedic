@@ -1,0 +1,2697 @@
+{
+ "02c3d93c81e8e3c34ad1d019": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Python interpreter used in the job does not have pytest installed (/opt/hostedtoolcache/Python/3.12.15/x64/bin/python raised 'No module named pytest'), so the test command failed immediately.",
+  "likely_cause": "The Python interpreter used in the job does not have pytest installed (/opt/hostedtoolcache/Python/3.12.15/x64/bin/python raised 'No module named pytest'), so the test command failed immediately.",
+  "evidence_verified": [
+   "/opt/hostedtoolcache/Python/3.12.15/x64/bin/python: No module named pytest",
+   "Script contents:",
+   "python -m pytest -q --tb=short -p no:cacheprovider",
+   "[command]/usr/bin/bash --noprofile --norc /home/vsts/work/_temp/bc35d4c1-7ef1-45cd-8f88-ea05d410e1e6.sh"
+  ],
+  "suggested_fixes": [
+   "Add an explicit step before running tests to install test dependencies, e.g. pip install -r requirements.txt or pip install pytest",
+   "Activate or create the correct virtual environment that contains pytest (python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt)",
+   "Ensure the pipeline uses the intended Python interpreter/version that has pytest installed (or install pytest into the toolcache image if using a self-hosted runner)"
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "da1fcc9ffaa977a9dbcbe73a": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The job tried to install a non-existent/invalid pinned pytest version (pytest==99.0.2), and pip could not find a matching distribution.",
+  "likely_cause": "The job tried to install a non-existent/invalid pinned pytest version (pytest==99.0.2), and pip could not find a matching distribution.",
+  "evidence_verified": [
+   "ERROR: Could not find a version that satisfies the requirement pytest==99.0.2 (from versions: 2.0.0, 2.0.1, 2.0.2, 2.0.3, 2.1.0, 2.1.1, 2.1.2, 2.1.3, 2.2.0, 2.2.1, 2.2.2, 2.2.3, 2.2.4, 2.3.0, 2.3.1, 2.3.2, 2.3.3, 2.3.4, 2.3.5, 2.4.0, 2.4.1, 2.4.2, 2.5.0, 2.5.1, 2.5.2, 2.6.0, 2.6.1, 2.6.2, 2.6.3, 2.6.4, 2.7.0, 2.7.1, 2.7.2, 2.7.3, 2.8.0, 2.8.1, 2.8.2, 2.8.3, 2.8.4, 2.8.5, 2.8.6, 2.8.7, 2.9.0, 2.9.1, 2.9.2, 3.0.0, 3.0.1, 3.0.2, 3.0.3, 3.0.4, 3.0.5, 3.0.6, 3.0.7, 3.1.0, 3.1.1, 3.1.2, 3.1.3, 3.2.0, 3.2.1, 3.2.2, 3.2.3, 3.2.4, 3.2.5, 3.3.0, 3.3.1, 3.3.2, 3.4.0, 3.4.1, 3.4.2, 3.5.0, 3.5.1, 3.6.0, 3.6.1, 3.6.2, 3.6.3, 3.6.4, 3.7.0, 3.7.1, 3.7.2, 3.7.3, 3.7.4, 3.8.0, 3.8.1, 3.8.2, 3.9.1, 3.9.2, 3.9.3, 3.10.0, 3.10.1, 4.0.0, 4.0.1, 4.0.2, 4.1.0, 4.1.1, 4.2.0, 4.2.1, 4.3.0, 4.3.1, 4.4.0, 4.4.1, 4.4.2, 4.5.0, 4.6.0, 4.6.1, 4.6.2, 4.6.3, 4.6.4, 4.6.5, 4.6.6, 4.6.7, 4.6.8, 4.6.9, 4.6.10, 4.6.11, 5.0.0, 5.0.1, 5.1.0, 5.1.1, 5.1.2, 5.1.3, 5.2.0, 5.2.1, 5.2.2, 5.2.3, 5.2.4, 5.3.0, 5.3.1, 5.3.2, 5.3.3, 5.3.4, 5.3.5, 5.4.0, 5.4.1, 5.4.2, 5.4.3, 6.0.0rc1, 6.0.0, 6.0.1, 6.0.2, 6.1.0, 6.1.1, 6.1.2, 6.2.0, 6.2.1, 6.2.2, 6.2.3, 6.2.4, 6.2.5, 7.0.0rc1, 7.0.0, 7.0.1, 7.1.0, 7.1.1, 7.1.2, 7.1.3, 7.2.0, 7.2.1, 7.2.2, 7.3.0, 7.3.1, 7.3.2, 7.4.0, 7.4.1, 7.4.2, 7.4.3, 7.4.4, 8.0.0rc1, 8.0.0rc2, 8.0.0, 8.0.1, 8.0.2, 8.1.1, 8.1.2, 8.2.0, 8.2.1, 8.2.2, 8.3.0, 8.3.1, 8.3.2, 8.3.3, 8.3.4, 8.3.5, 8.4.0, 8.4.1, 8.4.2, 9.0.0, 9.0.1, 9.0.2, 9.0.3, 9.1.0, 9.1.1)",
+   "ERROR: No matching distribution found for pytest==99.0.2"
+  ],
+  "suggested_fixes": [
+   "Fix the test requirements to use a real pytest version (e.g. change pytest==99.0.2 to a listed version such as pytest==9.1.1 or an appropriate supported range).",
+   "If the version is a typo, correct or remove the exact pin in requirements.txt/pyproject.toml/constraints file.",
+   "If using a private index, ensure pip is configured to point to the correct package index that contains the requested version."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "77ed2da8a33f14b7baa651b5": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Many tests assert that the CLI should exit with code 2 on usage/argument errors, but the test run shows the CLI exited with code 1 (SystemExit(1)) instead, causing widespread assertion failures.",
+  "likely_cause": "Many tests assert that the CLI should exit with code 2 on usage/argument errors, but the test run shows the CLI exited with code 1 (SystemExit(1)) instead, causing widespread assertion failures.",
+  "evidence_verified": [
+   "assert result.exit_code == 2",
+   "E   assert 1 == 2",
+   "E    +  where 1 = <Result SystemExit(1)>.exit_code",
+   "58 failed, 2204 passed, 24 skipped, 31000 deselected, 1 xfailed in 8.98s"
+  ],
+  "suggested_fixes": [
+   "Run the failing tests locally and reproduce a single failing case to inspect the CLI exit code and traceback.",
+   "Inspect the code path that raises SystemExit(1) for usage/argument errors and change it to produce exit code 2 where the tests expect it, or update the tests if the desired behavior changed.",
+   "Ensure test environment and CLI/library versions match the expected versions used by the test suite (e.g., click/pytest versions) \u2014 mismatched versions can change exit codes.",
+   "Add focused logging or a small reproducer that prints the SystemExit code and context so the exact cause can be diagnosed quickly."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c63c3bac12880d6c74e01492": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter detected import ordering and an unused import in src/click/utils.py and exited with a non-zero status, causing the Lint step to fail.",
+  "likely_cause": "The ruff linter detected import ordering and an unused import in src/click/utils.py and exited with a non-zero status, causing the Lint step to fail.",
+  "evidence_verified": [
+   "I001 [*] Import block is un-sorted or un-formatted",
+   "F401 [*] `shutil.get_terminal_size` imported but unused",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Run ruff --fix (e.g. ruff check --fix src tests) and commit the changes to reorder imports and remove the unused import.",
+   "Manually remove the unused import shutil.get_terminal_size from src/click/utils.py and organize the import block to satisfy ruff.",
+   "Add a CI pre-commit job or automated formatting step to apply ruff fixes before running the lint check, or adjust ruff configuration if this rule should be ignored."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "42818f1c18ed1d1df20c75de": {
+  "category": "permissions",
+  "confidence": "high",
+  "cause": "The smoke.sh script file is not executable, causing the shell to fail with 'Permission denied' when trying to exec it (exit code 126).",
+  "likely_cause": "The smoke.sh script file is not executable, causing the shell to fail with 'Permission denied' when trying to exec it (exit code 126).",
+  "evidence_verified": [
+   "/home/vsts/work/_temp/c212930e-5e4e-48a5-8e37-2d214d7a2465.sh: line 1: /home/vsts/work/1/s/scripts/smoke.sh: Permission denied",
+   "/home/vsts/work/_temp/c212930e-5e4e-48a5-8e37-2d214d7a2465.sh: line 1: exec: /home/vsts/work/1/s/scripts/smoke.sh: cannot execute: Permission denied",
+   "##[error]Bash exited with code '126'."
+  ],
+  "suggested_fixes": [
+   "Make the script executable in the repository or during checkout: git update-index --chmod=+x scripts/smoke.sh and commit, or run chmod +x scripts/smoke.sh as a prior pipeline step.",
+   "Invoke the script explicitly with the shell interpreter to avoid relying on the executable bit: bash ./scripts/smoke.sh (update the pipeline task command).",
+   "If using a checkout step that strips execute bits, configure it to preserve file modes or re-add chmod +x after checkout."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "96d36af04ba886b8fea98b6c": {
+  "category": "permissions",
+  "confidence": "high",
+  "cause": "The git push failed because the build identity (Build\\8a27b2f7-b789-44c1-b4c1-b34ea9af1cb4) does not have the Git 'GenericContribute' permission on the repository, resulting in a 403 Forbidden on push.",
+  "likely_cause": "The git push failed because the build identity (Build\\8a27b2f7-b789-44c1-b4c1-b34ea9af1cb4) does not have the Git 'GenericContribute' permission on the repository, resulting in a 403 Forbidden on push.",
+  "evidence_verified": [
+   "fatal: unable to access 'https://dev.azure.com/benchmark-org/azure-test-project/_git/azure-test-project/': The requested URL returned error: 403",
+   "##[error]Bash exited with code '128'."
+  ],
+  "suggested_fixes": [
+   "Grant the build identity (Build\\8a27b2f7-b789-44c1-b34ea9af1cb4) the 'GenericContribute' (or appropriate Contribute) permission on the repository in Azure DevOps.",
+   "Alternatively, configure the pipeline to use a service connection or PAT with push permissions, or run the tag step under a user/service account that has push rights.",
+   "If tags should be created by the pipeline identity, add the Project Collection Build Service or the specific pipeline's service account to the repo Contributors group."
+  ],
+  "verified": 2,
+  "quoted": 4
+ },
+ "6a661e5bcb4596f90533a317": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff formatting check failed because at least one file (src/click/formatting.py) is not formatted according to ruff, causing the command to exit with a non-zero status.",
+  "likely_cause": "The ruff formatting check failed because at least one file (src/click/formatting.py) is not formatted according to ruff, causing the command to exit with a non-zero status.",
+  "evidence_verified": [
+   "ruff format --check src tests",
+   "Would reformat: src/click/formatting.py",
+   "1 file would be reformatted, 75 files already formatted",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Run `ruff format src/click/formatting.py` locally, verify, and commit the reformatted file.",
+   "Add a formatting step (e.g., `ruff format`) in developer workflows or pre-commit to prevent regressions.",
+   "If intended, relax or adjust the pipeline check (e.g., change to `ruff format --check` behavior) to match project policy."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "852f74c25460674072fee3c8": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The build backend (flit_core) failed because it could not find the package/module named 'clik' referenced by the project configuration (pyproject). This indicates a packaging configuration error \u2014 the declared module name is missing or misspelled, or the package directory is not present in the source tree.",
+  "likely_cause": "The build backend (flit_core) failed because it could not find the package/module named 'clik' referenced by the project configuration (pyproject). This indicates a packaging configuration error \u2014 the declared module name is missing or misspelled, or the package directory is not present in the source tree.",
+  "evidence_verified": [
+   "File \"/tmp/build-env-bwbu3x3y/lib/python3.12/site-packages/flit_core/buildapi.py\", line 31, in get_requires_for_build_wheel",
+   "module = Module(info.module, Path.cwd())",
+   "ValueError: No file/folder found for module clik"
+  ],
+  "suggested_fixes": [
+   "Check pyproject.toml (or flit config) for the declared module name and correct any typos (e.g. 'clik' -> 'click' if applicable).",
+   "Ensure the package directory or module file actually exists in the repository at the expected path and is included in the build context.",
+   "If using a non-standard layout, update the packaging config to point to the correct package path or adjust include directives.",
+   "To debug locally, run python -m build locally or pass --env-dir and --sdist-extract-dir (as suggested in the log) to inspect the isolated build env and source layout."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "ef23132613bfc604aa6fcba7": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "A NameError in the project's click package: utils.py references _REGISTRY before it is defined (import-time error when loading src/click/*), causing pytest import to fail.",
+  "likely_cause": "A NameError in the project's click package: utils.py references _REGISTRY before it is defined (import-time error when loading src/click/*), causing pytest import to fail.",
+  "evidence_verified": [
+   "src/click/utils.py:31: in <module>",
+   "_CACHE = _REGISTRY",
+   "E   NameError: name '_REGISTRY' is not defined",
+   "ImportError while loading conftest '/home/vsts/work/1/s/tests/conftest.py'."
+  ],
+  "suggested_fixes": [
+   "Ensure _REGISTRY is defined before it is referenced in src/click/utils.py (declare or import it earlier).",
+   "Check import order in the click package so that any registry variable is created prior to utils importing it.",
+   "If this is an unintended local copy of the third-party 'click' package, rename the module or adjust PYTHONPATH to avoid shadowing the real dependency."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "fd0dd44077f84a2f14c19579": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy type check failed because textwrap.shorten was called with a string for the max_length argument (str(max_length)) while mypy expects an int.",
+  "likely_cause": "mypy type check failed because textwrap.shorten was called with a string for the max_length argument (str(max_length)) while mypy expects an int.",
+  "evidence_verified": [
+   "src/click/utils.py:100: error: Argument 2 to \"shorten\" has incompatible type",
+   "\"str\"; expected \"int\"  [arg-type]",
+   "return textwrap.shorten(text, str(max_length), placeholder=\"...\", ...",
+   "Found 1 error in 1 file (checked 29 source files)"
+  ],
+  "suggested_fixes": [
+   "Change the call to pass an int, e.g. textwrap.shorten(text, max_length, placeholder=\"...\"), not str(max_length).",
+   "Add or correct type annotations for max_length so mypy knows it's an int.",
+   "Run mypy locally before pushing to catch the failure early."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "01967e3f78470612cff07069": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "Pytest was invoked with a path 'tests_unit' that does not exist in the runner working directory, so no tests could be discovered and pytest exited with an error.",
+  "likely_cause": "Pytest was invoked with a path 'tests_unit' that does not exist in the runner working directory, so no tests could be discovered and pytest exited with an error.",
+  "evidence_verified": [
+   "ERROR: file or directory not found: tests_unit",
+   "no tests ran in 0.00s",
+   "##[error]Bash exited with code '4'."
+  ],
+  "suggested_fixes": [
+   "Confirm the repository checkout step ran and the tests_unit directory is present in the pipeline workspace before running pytest.",
+   "Verify and correct the pytest invocation path (e.g., use the correct directory name or run pytest from the repository root).",
+   "If the tests are in a different folder, update the command to: python -m pytest -q --tb=short -p no:cacheprovider <correct_tests_path>.",
+   "Add a diagnostic step before tests (e.g., ls -la) to list files and catch incorrect working-directory issues earlier."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "df20cc892e8038e9215b9077": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Unit tests that assert interactive prompt behavior produced different answers than expected (actual output shows 'True'/'yes!' where tests expected 'False'/'no :('). Several parametrized prompt tests failed, indicating a change in prompt handling or test input mocking.",
+  "likely_cause": "Unit tests that assert interactive prompt behavior produced different answers than expected (actual output shows 'True'/'yes!' where tests expected 'False'/'no :('). Several parametrized prompt tests failed, indicating a change in prompt handling or test input mocking.",
+  "evidence_verified": [
+   "E   AssertionError: assert 'Flag [y/N]: \\nTrue\\n' == 'Flag [y/N]: \\nFalse\\n'",
+   "E   AssertionError: assert 'Flag [Y/n]: \\nFalse\\n' == 'Flag [Y/n]: \\nTrue\\n'",
+   "E   AssertionError: assert 'Foo [y/N]: \\nyes!\\n' == 'Foo [y/N]: \\nno :(\\n'",
+   "11 failed, 2251 passed, 24 skipped, 31000 deselected, 1 xfailed in 7.02s"
+  ],
+  "suggested_fixes": [
+   "Run the failing tests locally to reproduce and get full tracebacks for those prompt-related tests.",
+   "Check recent changes to prompt/input handling code or to the test fixtures that mock stdin/confirm behavior and restore deterministic mocking.",
+   "Ensure test environment (stdin mocking, locales, environment variables) matches CI; explicitly set or mock input in tests rather than relying on environment defaults.",
+   "If a dependency affecting prompt parsing was upgraded, pin the expected version or update tests to match new behavior."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "09c58dbf85dcb9b66116e1f3": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "Two unit tests assert that the output should be 'ab' but the function under test returned '...' (ellipsis). This indicates a logic bug in the code that generates short help text (or an incorrect test expectation) for cases where the input text is shorter than the suffix, for both normal and no-wrap/mark-text variants.",
+  "likely_cause": "Two unit tests assert that the output should be 'ab' but the function under test returned '...' (ellipsis). This indicates a logic bug in the code that generates short help text (or an incorrect test expectation) for cases where the input text is shorter than the suffix, for both normal and no-wrap/mark-text variants.",
+  "evidence_verified": [
+   "E   AssertionError: assert '...' == 'ab'",
+   "E",
+   "E     - ab",
+   "E     + ..."
+  ],
+  "suggested_fixes": [
+   "Inspect the implementation of the function that produces default short help and find the branch that replaces short inputs with '...'; change logic so inputs shorter than the suffix are returned intact (or update to the intended behavior).",
+   "If the implementation is correct, update the two test expectations to match the intended behavior.",
+   "Add/adjust unit tests to cover edge cases: input shorter than suffix, equal length, and no-wrap / mark-text variants so regressions are caught.",
+   "Run the failing tests locally and add a regression test to prevent reversal."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "d2835ce5f5f006a63a930968": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The pipeline attempted to install the repository as a Python package from /home/vsts/work/1/s/src, but that directory does not contain packaging metadata (no setup.py or pyproject.toml). The install command therefore failed.",
+  "likely_cause": "The pipeline attempted to install the repository as a Python package from /home/vsts/work/1/s/src, but that directory does not contain packaging metadata (no setup.py or pyproject.toml). The install command therefore failed.",
+  "evidence_verified": [
+   "Obtaining file:///home/vsts/work/1/s/src",
+   "ERROR: file:///home/vsts/work/1/s/src does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found."
+  ],
+  "suggested_fixes": [
+   "Add a pyproject.toml or setup.py to the project's root (or the src subdirectory) so pip can install it.",
+   "Change the install command to target the correct package directory (or the repository root) if the project files live elsewhere.",
+   "If you only need dependencies, install from requirements.txt (pip install -r requirements.txt) instead of pip installing the package path."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "651d662bd22309453ddf26f2": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "A behavioral/regression change in the code under test caused choice handling (display values and case-sensitivity) to differ from test expectations, producing validation errors and non-zero exits in multiple tests.",
+  "likely_cause": "A behavioral/regression change in the code under test caused choice handling (display values and case-sensitivity) to differ from test expectations, producing validation errors and non-zero exits in multiple tests.",
+  "evidence_verified": [
+   "E   assert \"Usage: cli [...AR', 'BAZ'.\\n\" == 'foo-value\\n'",
+   "E   + Usage: cli [OPTIONS] {FOO|BAR|BAZ}",
+   "E   + Error: Invalid value for '{FOO|BAR|BAZ}': 'foo' is not one of 'FOO', 'BAR', 'BAZ'.",
+   "12 failed, 2250 passed, 24 skipped, 31000 deselected, 1 xfailed in 7.25s"
+  ],
+  "suggested_fixes": [
+   "Run the failing tests locally against the current commit to reproduce and get a full backtrace.",
+   "Inspect recent code changes that affect choice/enum handling, display value normalization, and case-sensitivity; revert or fix the regression so choices are presented and validated as tests expect.",
+   "If the behavior intentionally changed, update the tests to match the new, documented behavior (or add explicit test updates documenting the change).",
+   "Add targeted unit tests around choice display/validation to prevent regressions and ensure case handling is explicit."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "5b6af2ef096303989b0b5928": {
+  "category": "permissions",
+  "confidence": "high",
+  "cause": "The step attempted to write to /etc/click-ci.conf but the shell process lacked permission to create/modify that file (permission denied).",
+  "likely_cause": "The step attempted to write to /etc/click-ci.conf but the shell process lacked permission to create/modify that file (permission denied).",
+  "evidence_verified": [
+   "/home/vsts/work/_temp/d1a05e58-350b-420b-83cd-fbfcc77e5210.sh: line 1: /etc/click-ci.conf: Permission denied",
+   "echo \"mode=ci\" > /etc/click-ci.conf"
+  ],
+  "suggested_fixes": [
+   "Run the command with elevated privileges (e.g., prepend sudo) if the runner is expected to allow writes to /etc.",
+   "Write the CI settings to a file inside the job workspace (e.g., $WORKSPACE or /home/vsts/work) instead of /etc/.",
+   "Change the pipeline to use an agent or container image that has the required permissions or pre-creates /etc/click-ci.conf with appropriate owner/permissions before the step runs.",
+   "If writing to /etc is required, update runner configuration to run jobs as a user with the needed permissions or run the step in a privileged container."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "135a2381361410f7e31e2078": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The build backend (flit_core) failed because the pyproject/Flit config references a description file README.rst that is not present in the source tree, causing ConfigError and aborting the sdist/wheel build.",
+  "likely_cause": "The build backend (flit_core) failed because the pyproject/Flit config references a description file README.rst that is not present in the source tree, causing ConfigError and aborting the sdist/wheel build.",
+  "evidence_verified": [
+   "flit_core.config.ConfigError: Description file README.rst does not exist",
+   "Traceback (most recent call last):",
+   "FileNotFoundError: [Errno 2] No such file or directory: 'README.rst'",
+   "ERROR Backend subprocess exited when trying to invoke get_requires_for_build_sdist"
+  ],
+  "suggested_fixes": [
+   "Add the referenced README.rst file to the repository at the expected path.",
+   "Or update pyproject.toml / flit config to point to an existing README (for example README.md) or provide the long description inline instead of referencing a missing file.",
+   "As a debugging step, run the build locally and/or pass --env-dir and --sdist-extract-dir to preserve the build env and inspect sources as suggested by the build output."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "34890f862a30c6e9b8f07f37": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The linter (ruff) reported an undefined name 'shlex' in src/click/utils.py, indicating the module did not import the shlex module before use.",
+  "likely_cause": "The linter (ruff) reported an undefined name 'shlex' in src/click/utils.py, indicating the module did not import the shlex module before use.",
+  "evidence_verified": [
+   "F821 Undefined name `shlex`",
+   "--> src/click/utils.py:680:12",
+   "679 | def _quote(value: str) -> str:",
+   "680 |     return shlex.quote(value)"
+  ],
+  "suggested_fixes": [
+   "Add `import shlex` (or the appropriate import) at the top of src/click/utils.py.",
+   "Run the linter locally (ruff check src tests) to verify the fix before pushing.",
+   "If the symbol should come from a different module, update the code to reference the correct module or import."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "33280dd91cea3d6c77ac8b6f": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The mypy type checker failed because function _clamp_width in src/click/utils.py is missing a return on at least one code path, causing a type-check error.",
+  "likely_cause": "The mypy type checker failed because function _clamp_width in src/click/utils.py is missing a return on at least one code path, causing a type-check error.",
+  "evidence_verified": [
+   "src/click/utils.py:679: error: Missing return statement  [return]",
+   "def _clamp_width(width: int) -> int:",
+   "^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+   "Found 1 error in 1 file (checked 29 source files)"
+  ],
+  "suggested_fixes": [
+   "Inspect src/click/utils.py::_clamp_width and ensure every execution path returns an int (add an explicit return or restructure control flow).",
+   "Run mypy locally on the repo (mypy) to reproduce and verify the fix before pushing.",
+   "Add a unit test or type-checked example that exercises the previously missing path to prevent regression."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ea356d3b88198cdfeb3da695": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The linter (ruff) failed the lint step due to a mutable default argument in src/click/utils.py: function _collect defines bucket: list[str] = [] which triggers B006.",
+  "likely_cause": "The linter (ruff) failed the lint step due to a mutable default argument in src/click/utils.py: function _collect defines bucket: list[str] = [] which triggers B006.",
+  "evidence_verified": [
+   "B006 Do not use mutable data structures for argument defaults",
+   "--> src/click/utils.py:679:45",
+   "679 | def _collect(item: str, bucket: list[str] = []) -> list[str]:",
+   "help: Replace with `None`; initialize within function"
+  ],
+  "suggested_fixes": [
+   "Change the default to None and initialize inside the function, e.g. if bucket is None: bucket = []",
+   "Or use an immutable default such as a tuple if appropriate and convert to list when needed",
+   "Re-run the lint step (ruff check --no-fix src tests) after making the change"
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "b995d299c9dd94087687dafd": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "A SyntaxError in the repository source file src/click/utils.py (missing ':' after an if statement) caused pytest to fail while importing the test configuration.",
+  "likely_cause": "A SyntaxError in the repository source file src/click/utils.py (missing ':' after an if statement) caused pytest to fail while importing the test configuration.",
+  "evidence_verified": [
+   "E     File \"/home/vsts/work/1/s/src/click/utils.py\", line 89",
+   "E       if len(text) <= max_length",
+   "E                                 ^",
+   "E   SyntaxError: expected ':'"
+  ],
+  "suggested_fixes": [
+   "Fix the syntax in src/click/utils.py (add the missing ':' after the if statement on line 89).",
+   "Run a local Python syntax check (python -m py_compile src/click/utils.py) or run pytest locally before pushing.",
+   "Add a pre-commit or CI step to run a fast syntax check (pyflakes/pyright or python -m py_compile) to catch syntax errors earlier."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "cbf188f9d9fe4bd7de03b594": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy reported an untyped function '_join' in src/click/utils.py causing the type-check step to fail.",
+  "likely_cause": "mypy reported an untyped function '_join' in src/click/utils.py causing the type-check step to fail.",
+  "evidence_verified": [
+   "src/click/utils.py:679: error: Function is missing a type annotation",
+   "def _join(parts, sep=' '):"
+  ],
+  "suggested_fixes": [
+   "Add explicit type annotations to the function signature for _join (e.g. def _join(parts: Sequence[str], sep: str = ' ') -> str:).",
+   "If the function is intentionally untyped, update mypy configuration to allow untyped defs for this module or add a # type: ignore comment on the function to suppress the error.",
+   "Run mypy locally on the file after changes to verify the error is resolved before re-running the pipeline."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "3a8bed8e6dd97f3bd2a76592": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Multiple tests failed because assertions comparing expected help/output strings did not match actual output formatting (differences in spacing/alignment in help text). The test failures show expected vs actual whitespace differences in command help lines.",
+  "likely_cause": "Multiple tests failed because assertions comparing expected help/output strings did not match actual output formatting (differences in spacing/alignment in help text). The test failures show expected vs actual whitespace differences in command help lines.",
+  "evidence_verified": [
+   "E     At index 3 diff: '  -f TEXT   Output file name  [default: out.txt]' != '  -f TEXT  Output file name  [default: out.txt]'",
+   "E   AssertionError: assert '/debug; /no-debug  Enables or disables debug mode.' in 'Usage: cmd [OPTIONS]\\n\\nOptions:\\n  /debug; /no-debug   Enables or disables debug mode.\\n  /?                  Show this message and exit.\\n'",
+   "E   AssertionError: assert '  -C, --config PATH  Configuration file to use.\\n                     \\n                     If not given, the enviro...        consulted and used if set. If neither are given, a default\\n                     configuration file is loaded.' in 'Usage: cmd [OPTIONS]\\n\\nOptions:\\n  -C, --config PATH   Configuration file to use.\\n                      \\n         ...n, a default\\n                      configuration file is loaded.\\n  --help              Show this message and exit.\\n'",
+   "##[error]Bash exited with code '1'.\n"
+  ],
+  "suggested_fixes": [
+   "Compare the runtime/installed dependency versions (e.g. the CLI formatting library) used in the failing run with the versions used when tests pass and pin the expected version in CI.",
+   "Make the tests less brittle to minor whitespace/formatting: normalize whitespace before comparing or use substring checks that don't require exact column alignment.",
+   "If the project intentionally changed formatting, update the expected strings in the tests to match the new output.",
+   "Re-run the failing job locally or in CI with verbose diff (run pytest -k <test> -q --maxfail=1 -vv) to confirm the precise formatting change and adjust code or tests accordingly."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "68e9df183a6dfa862c6e7008": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "pip failed to find a matching distribution for the required build backend 'flit_core<4,>=3.11' when installing build dependencies for the project, causing the pip install step to fail.",
+  "likely_cause": "pip failed to find a matching distribution for the required build backend 'flit_core<4,>=3.11' when installing build dependencies for the project, causing the pip install step to fail.",
+  "evidence_verified": [
+   "ERROR: Could not find a version that satisfies the requirement flit_core<4,>=3.11 (from versions: none)",
+   "ERROR: No matching distribution found for flit_core<4,>=3.11",
+   "ERROR: Failed to build 'file:///home/vsts/work/1/s' when installing build dependencies"
+  ],
+  "suggested_fixes": [
+   "Ensure flit_core (>=3.11,<4) is available to the runner: add it to your private PyPI feed or allow access to public PyPI so pip can download it.",
+   "Add the required build backend to your package's pyproject.toml build-system.requires (or pin a compatible flit_core version) and commit that change.",
+   "If the private index blocks this package, configure pip to use an index that contains flit_core (or add an extra-index-url) in the pipeline before running pip install."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "ec45149bb6e3abc35bef663c": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "pip could not download the build dependency flit_core because connections to 127.0.0.1:3128 were refused (proxy misconfiguration or blocked access to PyPI).",
+  "likely_cause": "pip could not download the build dependency flit_core because connections to 127.0.0.1:3128 were refused (proxy misconfiguration or blocked access to PyPI).",
+  "evidence_verified": [
+   "WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError(\"HTTPSConnection(host='127.0.0.1', port=3128): Failed to establish a new connection: [Errno 111] Connection refused\")': /simple/flit-core/",
+   "ERROR: Could not find a version that satisfies the requirement flit_core<4,>=3.11 (from versions: none)",
+   "ERROR: No matching distribution found for flit_core<4,>=3.11",
+   "ERROR: Failed to build 'file:///home/vsts/work/1/s' when installing build dependencies"
+  ],
+  "suggested_fixes": [
+   "Check and correct proxy environment variables on the runner (HTTP_PROXY / HTTPS_PROXY) or unset them if no proxy is required.",
+   "Ensure the runner has network access to PyPI (pypi.org) or configure pip to use a reachable proxy/extra-index-url.",
+   "Pre-install flit_core on the runner or add it to a cached wheel location so pip does not need to fetch it during the job.",
+   "If you must use an internal proxy, verify the proxy is running on 127.0.0.1:3128 or update the proxy host:port to the correct reachable address."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "b429d1e9d30db640f565786c": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter found a lint error (E722: bare except) in src/click/utils.py which caused the lint step to fail and exit with code 1.",
+  "likely_cause": "The ruff linter found a lint error (E722: bare except) in src/click/utils.py which caused the lint step to fail and exit with code 1.",
+  "evidence_verified": [
+   "E722 Do not use bare `except`",
+   "--> src/click/utils.py:682:5",
+   "Found 1 error.",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Edit src/click/utils.py to avoid a bare except; catch a specific exception (e.g., 'except ValueError:' or 'except Exception:') or handle errors explicitly.",
+   "If the bare except is intentional, update the code comment and project ruff configuration to selectively ignore E722 for that line (e.g., # noqa: E722) or disable the rule in pyproject.toml.",
+   "Re-run the lint step locally (ruff check --no-fix src tests) before pushing to verify the fix."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "01e76e43a5f63f1b34d195b0": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "A test attempted to fetch http://config.corp.invalid but DNS name resolution failed (socket.gaierror / urllib.error.URLError), so the test could not reach the remote endpoint.",
+  "likely_cause": "A test attempted to fetch http://config.corp.invalid but DNS name resolution failed (socket.gaierror / urllib.error.URLError), so the test could not reach the remote endpoint.",
+  "evidence_verified": [
+   "E   socket.gaierror: [Errno -2] Name or service not known",
+   "E   urllib.error.URLError: <urlopen error [Errno -2] Name or service not known>",
+   "with urllib.request.urlopen(\"http://config.corp.invalid/v1/defaults\", timeout=5) as response:"
+  ],
+  "suggested_fixes": [
+   "Make the test independent of external DNS: mock urllib.request.urlopen or use a local test server for this endpoint.",
+   "If the test must contact the real host, ensure the runner environment can resolve config.corp.invalid (add DNS records or an /etc/hosts entry) and has network access to it.",
+   "Mark the test as an integration test and skip it in CI runs that lack access to internal services, or add a conditional skip when DNS lookup fails."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "e4d10d5646d22f7280260385": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Unit tests failed due to assertion mismatches in boolean conversion and environment-variable flag handling: the test output shows 'False' where tests expected 'True' or a string value ('bar'), indicating a regression in code that parses boolean flags or reads env var values.",
+  "likely_cause": "Unit tests failed due to assertion mismatches in boolean conversion and environment-variable flag handling: the test output shows 'False' where tests expected 'True' or a string value ('bar'), indicating a regression in code that parses boolean flags or reads env var values.",
+  "evidence_verified": [
+   "_______________________ test_boolean_conversion[y-True] ________________________",
+   "E   AssertionError: assert 'False' == 'True'",
+   "____________________ test_boolean_flag_envvar[SHOUT-y-True] ____________________",
+   "E   AssertionError: assert 'False' == 'True'"
+  ],
+  "suggested_fixes": [
+   "Run the failing tests locally or on the runner to reproduce: pytest tests/test_basic.py::test_boolean_conversion -q and pytest tests/test_options.py::test_boolean_flag_envvar -q",
+   "Inspect recent changes to the code that parse boolean flags or read environment variables (functions that convert 'y'/'True' strings to booleans) and restore correct logic for string 'y' and explicit string values.",
+   "Add focused debug/logging in the flag/env parsing code to print raw env values and the parsed result in the failing tests, then re-run the three failing tests.",
+   "If CI environment variables or test fixtures were changed, ensure no CI-level override sets those env vars to the string 'False' or alters parsing behavior; pin behavior in code to interpret 'y' as True and preserve non-boolean string values."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "1a944991f23d10bb6ed97f5e": {
+  "category": "code-error",
+  "confidence": "medium",
+  "cause": "A circular import in the repository's click package (src/click) caused Python to fail when importing Context from click.core. The test run failed during import due to a partially initialized module.",
+  "likely_cause": "A circular import in the repository's click package (src/click) caused Python to fail when importing Context from click.core. The test run failed during import due to a partially initialized module.",
+  "evidence_verified": [
+   "E   ImportError: cannot import name 'Context' from partially initialized module 'click.core' (most likely due to a circular import) (/home/vsts/work/1/s/src/click/core.py)",
+   "src/click/exceptions.py:8: in <module>",
+   "from .core import Context",
+   "src/click/core.py:24: in <module>"
+  ],
+  "suggested_fixes": [
+   "Inspect and remove the circular import between src/click/core.py and src/click/exceptions.py \u2014 e.g., move imports into functions or a lower-level module to break the cycle.",
+   "If this repository intends to use the external click package, avoid shipping a top-level package named 'click' (rename the package or adjust PYTHONPATH) so it does not shadow the installed click library.",
+   "Add unit tests or import tests that catch import-time circular dependencies early and run them locally before CI."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "1855d8f3fd55c9c23d801410": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Multiple shell-completion tests are failing because completion helper functions returned no or incorrect completions (assertions expecting lists of completions but receiving empty lists or different items). This looks like a regression in the completion code or a mismatched test dependency/environment, not a runner resource or service problem.",
+  "likely_cause": "Multiple shell-completion tests are failing because completion helper functions returned no or incorrect completions (assertions expecting lists of completions but receiving empty lists or different items). This looks like a regression in the completion code or a mismatched test dependency/environment, not a runner resource or service problem.",
+  "evidence_verified": [
+   "E   AssertionError: assert [] == ['!1', '!2', '+3']",
+   "E   AssertionError: assert [] == ['--on', '--off']",
+   "E   AssertionError: assert [] == ['a', 'b']",
+   "18 failed, 2244 passed, 24 skipped, 31000 deselected, 1 xfailed in 6.97s"
+  ],
+  "suggested_fixes": [
+   "Run a single failing test locally (pytest tests/test_shell_completion.py::test_option_flag -q -k test_option_flag) and add temporary debug prints/logging in the completion helper to see what input it receives and what it returns.",
+   "Review recent commits that touched shell completion code and run the test suite against the previous known-good commit to identify the regression.",
+   "Verify the test environment and pinned dependency versions (e.g., click or completion-related libs); if a dependency was upgraded, pin or adapt code/tests accordingly.",
+   "If tests rely on filesystem or environment state for path completions, ensure the CI job prepares the same fixtures (create expected files/dirs) before running tests."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "9405569938412bdb1669cdc6": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The installed Python on the runner is 3.12.15 but the click package being installed requires Python >= 3.14, causing pip to fail dependency resolution.",
+  "likely_cause": "The installed Python on the runner is 3.12.15 but the click package being installed requires Python >= 3.14, causing pip to fail dependency resolution.",
+  "evidence_verified": [
+   "Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (26.2.1)",
+   "INFO: pip is looking at multiple versions of click to determine which version is compatible with other requirements. This could take a while.",
+   "ERROR: Package 'click' requires a different Python: 3.12.15 not in '>=3.14'"
+  ],
+  "suggested_fixes": [
+   "Use a Python 3.14+ interpreter on the runner (upgrade the runner image or install Python 3.14 and use it for the job).",
+   "Pin click to a version that supports Python 3.12 in your requirements (e.g., specify an older click version in pyproject.toml/requirements.txt).",
+   "Use a toolchain step to install and activate the required Python version (pyenv, actions/setup-python, or distro package) before installing dependencies."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "340ab7772121b5eff1e579ad": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The package's __init__.py imports a non-existent symbol 'echoo' from click.utils (likely a typo), causing an ImportError when tests import the package.",
+  "likely_cause": "The package's __init__.py imports a non-existent symbol 'echoo' from click.utils (likely a typo), causing an ImportError when tests import the package.",
+  "evidence_verified": [
+   "from click.testing import CliRunner",
+   "src/click/__init__.py:70: in <module>",
+   "from .utils import echoo as echo",
+   "E   ImportError: cannot import name 'echoo' from 'click.utils' (/home/vsts/work/1/s/src/click/utils.py)"
+  ],
+  "suggested_fixes": [
+   "Correct the import in src/click/__init__.py (e.g., import 'echo' instead of 'echoo' if that is the intended symbol).",
+   "Run pytest locally after the fix to verify imports load correctly.",
+   "Add a unit test that imports the package root to catch import-time errors early.",
+   "Consider enabling CI linting or static checks to detect misspelled names before test runs."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c9cabd663f3f9544ede027fe": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "pip failed while reading the repository's pyproject.toml \u2014 tomllib raised a TOMLDecodeError: an illegal newline character was found at line 16, column 26, indicating a malformed pyproject.toml in the checked-out code.",
+  "likely_cause": "pip failed while reading the repository's pyproject.toml \u2014 tomllib raised a TOMLDecodeError: an illegal newline character was found at line 16, column 26, indicating a malformed pyproject.toml in the checked-out code.",
+  "evidence_verified": [
+   "Obtaining file:///home/vsts/work/1/s",
+   "tomllib.TOMLDecodeError: Illegal character '\\n' (at line 16, column 26)"
+  ],
+  "suggested_fixes": [
+   "Inspect and fix pyproject.toml at the repository root (look around line 16) \u2014 correct any unescaped/newline inside a string or malformed key/value.",
+   "Validate the file locally with a TOML linter (e.g. tomlkit or toml-cli) before pushing.",
+   "If the file is generated, ensure the generator produces valid TOML (no embedded raw newlines in basic strings).",
+   "Re-run the pipeline after fixing the pyproject.toml."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "bf96ad2e0af3864c39c794d9": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "A Python IndentationError in the repository code during import: src/click/parser.py has an unexpected indent at line 66, causing pytest to fail to load conftest and abort the test run.",
+  "likely_cause": "A Python IndentationError in the repository code during import: src/click/parser.py has an unexpected indent at line 66, causing pytest to fail to load conftest and abort the test run.",
+  "evidence_verified": [
+   "E     File \"/home/vsts/work/1/s/src/click/parser.py\", line 66",
+   "E       spare = None",
+   "E   IndentationError: unexpected indent"
+  ],
+  "suggested_fixes": [
+   "Open src/click/parser.py and fix the indentation at or around line 66 (remove the unexpected indent so the statement aligns with surrounding block).",
+   "Run a Python linter (flake8/pyflakes) or `python -m compileall` locally/CI to catch indentation/syntax errors before running tests.",
+   "Ensure consistent use of spaces vs tabs across the file (convert tabs to spaces) and add an editorconfig or pre-commit hook to enforce it.",
+   "Re-run the pipeline after committing the fix."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "64ca32b34032ec0e7fb136b0": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy type-checking failures: functions/variables annotated or inferred as int are returning or being assigned str values (e.g. return \"\" where int expected, assignment of int to variable typed str).",
+  "likely_cause": "mypy type-checking failures: functions/variables annotated or inferred as int are returning or being assigned str values (e.g. return \"\" where int expected, assignment of int to variable typed str).",
+  "evidence_verified": [
+   "src/click/utils.py:75: error: Incompatible return value type (got \"str\",",
+   "src/click/core.py:1279: error: Incompatible types in assignment (expression has",
+   "Found 5 errors in 2 files (checked 29 source files)"
+  ],
+  "suggested_fixes": [
+   "Inspect the indicated functions/lines and correct return values to match the declared or inferred return type (change returned strings to ints if appropriate).",
+   "If the code is correct, update function/variable type annotations to reflect the actual types (e.g., change annotation from int to str or use Union[int, str]).",
+   "Where appropriate, convert values explicitly (e.g., int(value) or str(value)) to satisfy types expected by callers.",
+   "Run mypy locally on the changed files to verify fixes before pushing; consider adding a targeted mypy config if certain files intentionally use mixed types."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "69139db62b8467527dfc3e86": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "pip failed to download build dependency flit_core because the configured package index host (pypi.corp.invalid) could not be DNS-resolved, causing installation to fail.",
+  "likely_cause": "pip failed to download build dependency flit_core because the configured package index host (pypi.corp.invalid) could not be DNS-resolved, causing installation to fail.",
+  "evidence_verified": [
+   "Looking in indexes: https://pypi.corp.invalid/simple",
+   "NameResolutionError(\"HTTPSConnection(host='pypi.corp.invalid', port=443): Failed to resolve 'pypi.corp.invalid' ([Errno -2] Name or service not known)\")",
+   "ERROR: Could not find a version that satisfies the requirement flit_core<4,>=3.11 (from versions: none)",
+   "ERROR: No matching distribution found for flit_core<4,>=3.11"
+  ],
+  "suggested_fixes": [
+   "Verify and fix the pip index configuration (e.g. --index-url or pip.conf) so it points to a reachable package index.",
+   "Ensure the host pypi.corp.invalid is resolvable and reachable from the runner (DNS entry, network routing, firewall, or VPN).",
+   "If the private index is unavailable, temporarily fallback to the public PyPI (remove custom index) or host the required wheel/artifact in an accessible internal repository.",
+   "Retry the job after resolving network/DNS issues or update CI variables to a correct index URL."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "7bda18a733beb5b07fa5bf2e": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "The curl command failed because the runner could not resolve the artifacts host name (DNS resolution failure).",
+  "likely_cause": "The curl command failed because the runner could not resolve the artifacts host name (DNS resolution failure).",
+  "evidence_verified": [
+   "Script contents:",
+   "curl -fsS --max-time 20 https://artifacts.corp.invalid/fixtures/sample-data.tar.gz -o fixtures.tar.gz",
+   "curl: (6) Could not resolve host: artifacts.corp.invalid",
+   "##[error]Bash exited with code '6'."
+  ],
+  "suggested_fixes": [
+   "Verify that the hostname artifacts.corp.invalid is correct and reachable from the runner (DNS lookup from the runner).",
+   "Ensure the runner has correct DNS configuration or add an /etc/hosts entry for the artifact host if appropriate.",
+   "Confirm network egress/firewall rules allow access to the artifacts host from the runner.",
+   "Add retry logic to the download step and consider increasing curl timeout for transient network issues."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "161f37b21bbf7d137e92877a": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy detected a type error: code attempts to access .obj on a variable typed as Context | None (ctx may be None).",
+  "likely_cause": "mypy detected a type error: code attempts to access .obj on a variable typed as Context | None (ctx may be None).",
+  "evidence_verified": [
+   "src/click/utils.py:683: error: Item \"None\" of \"Context | None\" has no attribute",
+   "\"obj\"  [union-attr]",
+   "return ctx.obj",
+   "Found 1 error in 1 file (checked 29 source files)"
+  ],
+  "suggested_fixes": [
+   "Update src/click/utils.py to handle the None case before accessing ctx.obj (e.g., check `if ctx is None:` or assert `ctx is not None` where appropriate).",
+   "Refine the type annotations so ctx is not Optional where .obj access is expected, or use typing.cast when you can guarantee non-None at that point.",
+   "If this is an intentional false positive, narrow the mypy check with a local # type: ignore[union-attr] comment or adjust mypy config for that file."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "5a8196d5af33972292546fbf": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Two unit tests asserting expected converted values failed: IntRange.convert returned 0 instead of expected 1, and 5 instead of expected 4. This indicates a bug or changed behavior in the IntRange.convert implementation or an update to test expectations.",
+  "likely_cause": "Two unit tests asserting expected converted values failed: IntRange.convert returned 0 instead of expected 1, and 5 instead of expected 4. This indicates a bug or changed behavior in the IntRange.convert implementation or an update to test expectations.",
+  "evidence_verified": [
+   "E   AssertionError: assert 0 == 1",
+   "E   AssertionError: assert 5 == 4",
+   "FAILED tests/test_types/test_IntRange.py::test_range[type7-0-1] - AssertionEr...",
+   "FAILED tests/test_types/test_IntRange.py::test_range[type8-5-4] - AssertionEr..."
+  ],
+  "suggested_fixes": [
+   "Inspect IntRange.convert implementation to ensure it parses input and clamps to the intended bounds (inclusive/exclusive) used by the tests.",
+   "Run the two failing tests locally while stepping through convert to see why it returns 0 and 5 instead of expected values.",
+   "If implementation is correct, update the tests to match the intended behavior; otherwise fix the implementation and add a regression test covering these cases.",
+   "Rerun the pipeline after the code/test fix."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "eeee55bef0c294eed7ae0c61": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The test run failed because Python could not import the 'yaml' module (ModuleNotFoundError: No module named 'yaml'), indicating PyYAML is not installed in the test environment.",
+  "likely_cause": "The test run failed because Python could not import the 'yaml' module (ModuleNotFoundError: No module named 'yaml'), indicating PyYAML is not installed in the test environment.",
+  "evidence_verified": [
+   "import yaml",
+   "E   ModuleNotFoundError: No module named 'yaml'"
+  ],
+  "suggested_fixes": [
+   "Install PyYAML before running tests (e.g. pip install pyyaml or add pyyaml to your requirements/dev dependencies and run pip install -r requirements.txt).",
+   "Ensure the test job activates the correct virtual environment or uses the intended Python interpreter that has the project dependencies installed.",
+   "Add an explicit dependency-install step to the pipeline (e.g. pip install -r requirements.txt) prior to running pytest."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "81b3620f38819a31ba321f74": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test assertion failed: the test expected the ANSI sequence '\\x1b[22m' but the function returned '\\x1b[21m', causing pytest to fail one test.",
+  "likely_cause": "A unit test assertion failed: the test expected the ANSI sequence '\\x1b[22m' but the function returned '\\x1b[21m', causing pytest to fail one test.",
+  "evidence_verified": [
+   "E   AssertionError: assert '\\x1b[21mx y\\x1b[0m' == '\\x1b[22mx y\\x1b[0m'",
+   "E"
+  ],
+  "suggested_fixes": [
+   "Update the test expectation in tests/test_utils/test_style.py to expect '\\x1b[21m' if that is the intended behavior.",
+   "If the intended behavior is '\\x1b[22m', modify the styling code (or pin the dependency that produces the ANSI codes) so it emits '\\x1b[22m' instead of '\\x1b[21m'.",
+   "Make the test resilient by accepting either '\\x1b[21m' or '\\x1b[22m' when both are acceptable (e.g., normalize or use a regex).",
+   "If this change was introduced by a dependency update, pin the dependency version that matched the previous behavior until the code/tests are aligned."
+  ],
+  "verified": 2,
+  "quoted": 4
+ },
+ "47bd0fbc0139c8b0ed26d01c": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The formatting check (ruff --check) found files that would be reformatted and returned a non-zero exit code, causing the step to fail.",
+  "likely_cause": "The formatting check (ruff --check) found files that would be reformatted and returned a non-zero exit code, causing the step to fail.",
+  "evidence_verified": [
+   "ruff format --check src tests",
+   "Would reformat: src/click/utils.py",
+   "1 file would be reformatted, 75 files already formatted",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Run ruff format (e.g. ruff format src/click/utils.py or ruff format --apply) locally and commit the changes.",
+   "Alternatively, run ruff format --check in CI with an auto-fix job: have a separate job that runs ruff format and commits/creates a patch if allowed.",
+   "If the intent is to only report formatting without failing the pipeline, change the step to not fail on non-zero exit or add guidance in the job output on how to fix formatting."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "11ab53b69c079257b5207625": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter failed the Lint step due to a single E501 'Line too long' error in src/click/exceptions.py (line 77).",
+  "likely_cause": "The ruff linter failed the Lint step due to a single E501 'Line too long' error in src/click/exceptions.py (line 77).",
+  "evidence_verified": [
+   "E501 Line too long (125 > 88)",
+   "--> src/click/exceptions.py:77:89",
+   "Found 1 error.",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Wrap or shorten the long string/comment on src/click/exceptions.py line 77 to be <= 88 characters.",
+   "Alternatively, adjust the project's ruff/pyproject.toml configuration to set a higher max-line-length if the longer line is acceptable.",
+   "As a quick patch, add a per-line noqa comment (e.g.  # noqa: E501) to that line if you intentionally allow it, but prefer reflowing text or refactoring for readability."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "740a84d6a66773bafd23d5f4": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter found an unused local variable (`spare_width`) in src/click/utils.py which caused the lint step to fail (non\u2011zero exit).",
+  "likely_cause": "The ruff linter found an unused local variable (`spare_width`) in src/click/utils.py which caused the lint step to fail (non\u2011zero exit).",
+  "evidence_verified": [
+   "F841 Local variable `spare_width` is assigned to but never used",
+   "--> src/click/utils.py:78:5",
+   "Found 1 error.",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Remove the unused variable `spare_width` from src/click/utils.py if it is not needed.",
+   "If the value should be used, update the code to use `spare_width` appropriately.",
+   "If you intentionally keep it, rename to `_spare_width` or add a comment to justify and adjust linter rules if acceptable.",
+   "As a last resort for automated correction, run ruff with --unsafe-fixes locally to apply hidden fixes and review changes."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "b63f54d50c17ee62cb135e38": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "Two pytest assertions failed in tests/test_arguments.py indicating the code under test produces incorrect output/order for nargs '*' and combination of specified + '*' (argument parsing behavior), causing the test step to fail.",
+  "likely_cause": "Two pytest assertions failed in tests/test_arguments.py indicating the code under test produces incorrect output/order for nargs '*' and combination of specified + '*' (argument parsing behavior), causing the test step to fail.",
+  "evidence_verified": [
+   "___________________________ test_nargs_star_ordering ___________________________",
+   "tests/test_arguments.py:962: in test_nargs_star_ordering",
+   "E   assert [\"('a',)\", 'c', 'b'] == [\"('a',)\", 'b', 'c']",
+   "___________________ test_nargs_specified_plus_star_ordering ____________________"
+  ],
+  "suggested_fixes": [
+   "Run the failing tests locally to reproduce and get full diffs (use pytest -v) to inspect exact output differences.",
+   "Investigate and fix the argument-parsing code that handles ordering for nargs='*' and combinations of specified arguments plus '*' so it produces the expected order/values.",
+   "Add or adjust unit tests if the intended behavior changed deliberately (update expected outputs) or add a regression test after fixing the parser.",
+   "Rerun the pipeline after fixing the code to confirm the tests pass."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "6ba462644ad29b043d05121c": {
+  "category": "permissions",
+  "confidence": "high",
+  "cause": "pip attempted to install packages into a system location (/usr/lib/python3/dist-packages) and lacked filesystem permissions, causing PermissionError when moving/copying files.",
+  "likely_cause": "pip attempted to install packages into a system location (/usr/lib/python3/dist-packages) and lacked filesystem permissions, causing PermissionError when moving/copying files.",
+  "evidence_verified": [
+   "PermissionError: [Errno 13] Permission denied: '/tmp/pip-target-7epxd7ur/lib/python/py.py' -> '/usr/lib/python3/dist-packages/py.py'",
+   "PermissionError: [Errno 13] Permission denied: '/usr/lib/python3/dist-packages/py.py'"
+  ],
+  "suggested_fixes": [
+   "Use a virtual environment (python -m venv .venv && source .venv/bin/activate) before installing test dependencies.",
+   "Install packages with --user or specify an isolated target directory for pip (pip install --user -r requirements.txt) if a venv is not possible.",
+   "Run the install step with elevated privileges only if appropriate (e.g., sudo), or adjust runner image so the Python site-packages directory is writable for the pipeline user.",
+   "Ensure the pipeline uses the intended Python interpreter/environment (verify PATH and Python used by pip) to avoid accidentally targeting system directories."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "b756692e83cb7ff514345c35": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "pip dependency resolution failed: the environment requests pluggy==0.13.1 while pytest==9.0.2 requires pluggy>=1.5,<2, causing a ResolutionImpossible error.",
+  "likely_cause": "pip dependency resolution failed: the environment requests pluggy==0.13.1 while pytest==9.0.2 requires pluggy>=1.5,<2, causing a ResolutionImpossible error.",
+  "evidence_verified": [
+   "ERROR: Cannot install pluggy==0.13.1 and pytest==9.0.2 because these package versions have conflicting dependencies.",
+   "The conflict is caused by:",
+   "The user requested pluggy==0.13.1",
+   "pytest 9.0.2 depends on pluggy<2 and >=1.5"
+  ],
+  "suggested_fixes": [
+   "Remove or loosen the explicit pluggy==0.13.1 pin so pip can pick a pluggy compatible with pytest 9.0.2 (>=1.5,<2).",
+   "Or pin pytest to a version compatible with pluggy==0.13.1 if you must keep that pluggy version.",
+   "Update your dependency specification (requirements.txt/pyproject.toml/constraints) and re-run pip to allow dependency resolution."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "195c9f8e5e51d10c02d4b973": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The build backend (flit_core) failed because the pyproject.toml's [project].license-files entry references 'LICENSE.md' which was not found in the source tree, causing a ConfigError and aborting the build.",
+  "likely_cause": "The build backend (flit_core) failed because the pyproject.toml's [project].license-files entry references 'LICENSE.md' which was not found in the source tree, causing a ConfigError and aborting the build.",
+  "evidence_verified": [
+   "File \"/tmp/build-env-icd28cge/lib/python3.12/site-packages/flit_core/config.py\", line 486, in _license_files_from_globs",
+   "flit_core.config.ConfigError: No files found for [project.license-files]: 'LICENSE.md' pattern"
+  ],
+  "suggested_fixes": [
+   "Add the referenced LICENSE.md file to the repository at the expected path.",
+   "Or update pyproject.toml to point project.license-files to an existing license file (or remove the license-files entry if not needed).",
+   "Re-run the build locally (python -m build) to verify the fix before pushing."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "d528f378c97b69fab4860c41": {
+  "category": "timeout",
+  "confidence": "low",
+  "cause": "The step waited indefinitely for the mock service health endpoint but the pipeline was cancelled before the service became healthy. The loop 'until curl -fs http://localhost:8080/health; do sleep 2; done' never succeeded and the operation was canceled.",
+  "likely_cause": "The step waited indefinitely for the mock service health endpoint but the pipeline was cancelled before the service became healthy. The loop 'until curl -fs http://localhost:8080/health; do sleep 2; done' never succeeded and the operation was canceled.",
+  "evidence_verified": [
+   "Script contents:",
+   "until curl -fs http://localhost:8080/health; do sleep 2; done",
+   "##[error]The Operation will be canceled. The next steps may not contain expected logs.",
+   "##[error]Bash exited with code 'null'."
+  ],
+  "suggested_fixes": [
+   "Start or verify the mock service earlier in the job before running the wait loop.",
+   "Replace the infinite until loop with a loop that includes a maximum timeout and non-zero exit code on failure (e.g., retry for N attempts then exit 1).",
+   "Add diagnostic logging (curl -v or curl --max-time) to capture why the health endpoint fails.",
+   "Increase the pipeline/job timeout or ensure any service startup step runs in the same job and completes before the wait step."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "cc491de92c3718addbb2f29b": {
+  "category": "timeout",
+  "confidence": "low",
+  "cause": "The test run was canceled before completion (pipeline/job cancellation or timeout). The log shows the operation was canceled while tests were running, so the failure is due to the job being stopped rather than an assertion or script error.",
+  "likely_cause": "The test run was canceled before completion (pipeline/job cancellation or timeout). The log shows the operation was canceled while tests were running, so the failure is due to the job being stopped rather than an assertion or script error.",
+  "evidence_verified": [
+   "##[error]The Operation will be canceled. The next steps may not contain expected logs.",
+   "##[error]The operation was canceled."
+  ],
+  "suggested_fixes": [
+   "Check the pipeline run's audit/events to see whether it was canceled manually or hit a job timeout and who/what triggered it.",
+   "If this was a timeout, increase the job timeout limit or break the test suite into shorter shards so individual jobs finish within the timeout.",
+   "Add explicit test-suite logging and test-suite-level timeouts so long-running tests are easier to identify and abort gracefully.",
+   "Enable runner health sampling/metrics for future runs so you can determine if runner resource issues coincide with cancellations."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "09fa3e158421d6013f9a53af": {
+  "category": "timeout",
+  "confidence": "low",
+  "cause": "The pipeline run was canceled during test execution (operation canceled). The logs show the job was terminated before pytest completed; the exact initiator (timeout, user, or controller) is not shown.",
+  "likely_cause": "The pipeline run was canceled during test execution (operation canceled). The logs show the job was terminated before pytest completed; the exact initiator (timeout, user, or controller) is not shown.",
+  "evidence_verified": [
+   "##[error]The Operation will be canceled. The next steps may not contain expected logs.",
+   "##[error]The operation was canceled."
+  ],
+  "suggested_fixes": [
+   "Re-run the pipeline to see if the cancellation recurs.",
+   "Check the pipeline/job timeout and increase it if tests need more time.",
+   "Check pipeline audit logs or the CI controller for who/what triggered the cancellation (manual cancel, scheduled maintenance, or controller timeout).",
+   "Enable runner health sampling and collect the runner/agent service logs for the run to determine if the runner failed or was interrupted."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "a7f0fb75c4851f2bb0512b6f": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "A JavaScript syntax error in src/cart.js (line 4) \u2014 the return statement 'return [...cart, item;' is missing a closing bracket/semicolon, causing the Jest runner to fail to parse the file.",
+  "likely_cause": "A JavaScript syntax error in src/cart.js (line 4) \u2014 the return statement 'return [...cart, item;' is missing a closing bracket/semicolon, causing the Jest runner to fail to parse the file.",
+  "evidence_verified": [
+   "SyntaxError: /home/vsts/work/1/s/web/src/cart.js: Unexpected token, expected \",\" (4:23)",
+   " 4 |   return [...cart, item;",
+   "|                        ^",
+   "> 1 | const { addItem, total, applyDiscount } = require(\"./cart\");"
+  ],
+  "suggested_fixes": [
+   "Open src/cart.js and fix the return statement (e.g. change to: return [...cart, item];).",
+   "Run the test suite locally (npx jest) or linting to catch syntax errors before pushing.",
+   "Add a pre-commit or CI lint step (eslint) to prevent malformed JS from reaching the pipeline."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "7eb254d512f9751008321079": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "TypeScript type error in src/price.ts: a string value is being assigned where a number is expected (TS2322), causing the tsc command to fail with exit code 2.",
+  "likely_cause": "TypeScript type error in src/price.ts: a string value is being assigned where a number is expected (TS2322), causing the tsc command to fail with exit code 2.",
+  "evidence_verified": [
+   "src/price.ts(8,3): error TS2322: Type 'string' is not assignable to type 'number'.",
+   "##[error]Bash exited with code '2'.",
+   "Script contents:",
+   "npx tsc --noEmit -p ."
+  ],
+  "suggested_fixes": [
+   "Inspect src/price.ts around line 8 and correct the type mismatch: either change the declared type to string if the value should be a string, or convert/parse the string to a number (e.g. Number(value) or parseFloat(value) ) before assignment.",
+   "Run npx tsc --noEmit -p . locally to reproduce and verify the fix before pushing.",
+   "If the value can be both string and number, update the type declarations (union type) or add runtime validation to coerce safely.",
+   "Add a targeted unit/type test for this code path to prevent regressions."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "219eca094d2991dfb24db439": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Docker build failed because the base image acmecorp/private-python:3.12 could not be pulled due to authorization failure or missing repository (insufficient_scope).",
+  "likely_cause": "The Docker build failed because the base image acmecorp/private-python:3.12 could not be pulled due to authorization failure or missing repository (insufficient_scope).",
+  "evidence_verified": [
+   "1 | >>> FROM acmecorp/private-python:3.12"
+  ],
+  "suggested_fixes": [
+   "Verify the image name and tag (acmecorp/private-python:3.12) exist in the registry.",
+   "Ensure the pipeline authenticates to Docker Hub (or the appropriate registry) before docker build (e.g., docker login using a service principal or pipeline service connection).",
+   "Provide or update registry credentials/permissions so the runner can pull the private image (grant pull access to the pipeline's account).",
+   "If the base image should be public, confirm its visibility or push the image to an accessible registry or use a public base image instead."
+  ],
+  "verified": 1,
+  "quoted": 3
+ },
+ "2d9cc3bd42c4ad77592544dc": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "npm failed to reach the configured registry (registry.corp.invalid) due to DNS resolution failure (getaddrinfo ENOTFOUND), causing npm install to exit with code 1.",
+  "likely_cause": "npm failed to reach the configured registry (registry.corp.invalid) due to DNS resolution failure (getaddrinfo ENOTFOUND), causing npm install to exit with code 1.",
+  "evidence_verified": [
+   "npm error network request to http://registry.corp.invalid/@eslint%2fjs failed, reason: getaddrinfo ENOTFOUND registry.corp.invalid",
+   "npm error network This is a problem related to network connectivity."
+  ],
+  "suggested_fixes": [
+   "Verify the registry URL is correct and reachable from the runner (try curl or nslookup against registry.corp.invalid).",
+   "If the registry is internal, ensure the runner has network access / VPN to the internal network and DNS can resolve registry.corp.invalid.",
+   "If behind a proxy, configure npm proxy settings (npm config set proxy / npm config set https-proxy) or set environment proxy variables for the runner.",
+   "If the registry hostname is incorrect, update project/pipeline npm config or .npmrc to point to the correct registry and retry the job."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "91bb5bde87b14170ed3d3fb7": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "npm install failed because the package '@acme-internal/ui-kit@1.2.0' could not be found in the registry (404). This indicates the dependency/version is not available from the configured npm registry or the registry/auth settings are incorrect for a private package.",
+  "likely_cause": "npm install failed because the package '@acme-internal/ui-kit@1.2.0' could not be found in the registry (404). This indicates the dependency/version is not available from the configured npm registry or the registry/auth settings are incorrect for a private package.",
+  "evidence_verified": [
+   "npm error 404 Not Found - GET https://registry.npmjs.org/@acme-internal%2fui-kit - Not found",
+   "npm error 404  '@acme-internal/ui-kit@1.2.0' is not in this registry."
+  ],
+  "suggested_fixes": [
+   "Verify that '@acme-internal/ui-kit@1.2.0' is published to the registry being used (npmjs or your private registry).",
+   "If this is a private package, ensure the pipeline has a correct .npmrc with registry and authentication (token) before running npm install.",
+   "If the package/version was renamed or moved, update package.json to the correct package name and version, or install from a git/tarball URL as appropriate.",
+   "If you expect the public npm registry to host it, confirm the package scope and name spelling are correct."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "6932977425ecea80a64be9fe": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test failed: the total() function returned 6 for input [{ price: 5, qty: 2 }, { price: 1, qty: 3 }] but the test expects 13, so the implementation of total (or the test expectation) is incorrect.",
+  "likely_cause": "A unit test failed: the total() function returned 6 for input [{ price: 5, qty: 2 }, { price: 1, qty: 3 }] but the test expects 13, so the implementation of total (or the test expectation) is incorrect.",
+  "evidence_verified": [
+   "Expected: 13",
+   "Received: 6",
+   "9 |     expect(total([{ price: 5, qty: 2 }, { price: 1, qty: 3 }])).toBe(13);",
+   "Tests:       1 failed, 2 passed, 3 total"
+  ],
+  "suggested_fixes": [
+   "Open src/cart.js (or wherever total is implemented) and verify the total() implementation - it should sum price * qty for each item.",
+   "Fix the calculation bug (e.g., ensure you multiply price by qty and accumulate the results).",
+   "Run the test suite locally (npx jest) after the fix to confirm all tests pass.",
+   "If the implementation is correct, review the test in src/cart.test.js to ensure the expected value is intended."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "90e47bb51795a6c9e6ae9ef5": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "npm failed because package.json in the repository is invalid JSON (JSON.parse error). The log shows npm expected a ',' or '}' after a property value, indicating a syntax problem\u2014likely a missing comma between properties (e.g. between \"private\" and \"description\").",
+  "likely_cause": "npm failed because package.json in the repository is invalid JSON (JSON.parse error). The log shows npm expected a ',' or '}' after a property value, indicating a syntax problem\u2014likely a missing comma between properties (e.g. between \"private\" and \"description\").",
+  "evidence_verified": [
+   "npm error JSON.parse Expected ',' or '}' after property value in JSON at position 69 while parsing near \"...  \\\"private\\\": true\\n  \\\"description\\\": \\\"Smal...\"",
+   "npm error JSON.parse Failed to parse JSON data."
+  ],
+  "suggested_fixes": [
+   "Fix the repository's web/package.json so it is valid JSON (add the missing comma or correct the syntax between properties).",
+   "Validate package.json locally before committing (e.g. run: node -e \"JSON.parse(require('fs').readFileSync('web/package.json','utf8'))\" or use a JSON linter).",
+   "Add a CI lint/validate step for package.json before running npm install to catch this earlier."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "93e9d0b0185fbd2c45fbcba3": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Docker build fails because pip cannot find a distribution named 'click-extras-zzz' when running pip install inside the image.",
+  "likely_cause": "The Docker build fails because pip cannot find a distribution named 'click-extras-zzz' when running pip install inside the image.",
+  "evidence_verified": [
+   "#10 49.54 ERROR: Could not find a version that satisfies the requirement click-extras-zzz (from versions: none)",
+   "#10 49.75 ERROR: No matching distribution found for click-extras-zzz"
+  ],
+  "suggested_fixes": [
+   "Remove or correct the dependency name 'click-extras-zzz' in the Dockerfile or project requirements (pyproject.toml).",
+   "If the package is private, configure pip to use the correct index (e.g. add --index-url or --extra-index-url and any required credentials) before installing.",
+   "If you intended to request an extras spec (e.g. click[extras]), update the install command or pyproject to use the correct syntax/name.",
+   "Verify the package is published to the target PyPI index and that the package name and version are correct."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "4629a6ea6938def90cf00dc8": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Dockerfile attempts to apt-get install a package that does not exist in the base image's Debian repositories (libnonexistent-dev), causing apt to fail with exit code 100.",
+  "likely_cause": "The Dockerfile attempts to apt-get install a package that does not exist in the base image's Debian repositories (libnonexistent-dev), causing apt to fail with exit code 100.",
+  "evidence_verified": [
+   "2.298 E: Unable to locate package libnonexistent-dev",
+   "ERROR: process \"/bin/sh -c apt-get update && apt-get install -y libnonexistent-dev\" did not complete successfully: exit code: 100",
+   "5 | >>> RUN apt-get update && apt-get install -y libnonexistent-dev",
+   "ERROR: failed to build: failed to solve: process \"/bin/sh -c apt-get update && apt-get install -y libnonexistent-dev\" did not complete successfully: exit code: 100"
+  ],
+  "suggested_fixes": [
+   "Remove or correct the nonexistent package from the Dockerfile (replace libnonexistent-dev with the correct package name).",
+   "If a system library is required, verify the exact Debian package name for Debian trixie and add any needed apt sources before installing.",
+   "If the dependency is optional for the image, omit the apt-get install step or wrap it with a conditional/install only when present.",
+   "Run the docker build locally to validate package names and repository access before running in CI."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "759f961bbaf1fe3fbc0a4fc4": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "npm failed because a requested package version does not exist: jest@29.7.99",
+  "likely_cause": "npm failed because a requested package version does not exist: jest@29.7.99",
+  "evidence_verified": [
+   "npm error code ETARGET",
+   "npm error notarget No matching version found for jest@29.7.99.",
+   "npm error notarget In most cases you or one of your dependencies are requesting",
+   "npm error A complete log of this run can be found in: /home/vsts/.npm/_logs/2026-10-18T10_57_17_858Z-debug-0.log"
+  ],
+  "suggested_fixes": [
+   "Inspect package.json and any lockfile for a dependency pin to jest@29.7.99 and change it to a valid existing version (for example 29.7.0 or the latest 29.x available).",
+   "If the version is coming from a transitive dependency, run npm ls jest to locate the source and update that dependency or add an explicit compatible resolution.",
+   "Ensure the npm registry configuration is correct (no private registry or typo) and retry npm install after updating the version.",
+   "Remove node_modules and package-lock.json and run npm install again after fixing the version to regenerate a clean lockfile."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "61b9d778698a462610790140": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "pylint reported a no-member error: code in src/click/utils.py attempts to access a non-existent attribute 'nothing' on a str instance, causing pylint to exit with a non-zero status.",
+  "likely_cause": "pylint reported a no-member error: code in src/click/utils.py attempts to access a non-existent attribute 'nothing' on a str instance, causing pylint to exit with a non-zero status.",
+  "evidence_verified": [
+   "************* Module click.utils",
+   "src/click/utils.py:680:11: E1101: Instance of 'str' has no 'nothing' member (no-member)",
+   "##[error]Bash exited with code '2'."
+  ],
+  "suggested_fixes": [
+   "Inspect src/click/utils.py at line 680 and remove or correct the attribute access '...nothing' on the str value.",
+   "If the attribute is expected on a different type, ensure the variable is the correct type (add a cast or adjust code to use the right object).",
+   "If this is a false positive from pylint, narrow the scope with a targeted pylint disable comment for that line (e.g. # pylint: disable=no-member) or adjust type hints so the checker understands the type.",
+   "Re-run pylint locally to verify the fix before pushing changes."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "84870a027210431be67335a3": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A Jest test exceeded the default 5000 ms timeout (the test awaits a 9000 ms delay), causing the test to fail; Jest also reports lingering asynchronous operations that prevented it from exiting cleanly.",
+  "likely_cause": "A Jest test exceeded the default 5000 ms timeout (the test awaits a 9000 ms delay), causing the test to fail; Jest also reports lingering asynchronous operations that prevented it from exiting cleanly.",
+  "evidence_verified": [
+   "\u2715 waits for the price feed (4999 ms)",
+   "thrown: \"Exceeded timeout of 5000 ms for a test.",
+   "12 |   test(\"waits for the price feed\", async () => {",
+   "13 |     await new Promise((resolve) => setTimeout(resolve, 9000));"
+  ],
+  "suggested_fixes": [
+   "Shorten the artificial delay in the test (avoid waiting 9000 ms).",
+   "Increase Jest timeout for this test, e.g. use test(..., async () => {\u2026}, 10000) or call jest.setTimeout(10000).",
+   "Use Jest timer mocks or mock the async dependency instead of real setTimeout to make the test fast and deterministic.",
+   "Run Jest with --detectOpenHandles locally to identify and fix any lingering async operations so Jest can exit cleanly."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "61375492b7bed2ad7425ccd2": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "Black failed because importing the project sources raised a SyntaxError in src/click/utils.py (missing ':' on an if statement). The black runner imported the repository package (src/black/__init__.py) which caused project code to be loaded and the syntax error to surface.",
+  "likely_cause": "Black failed because importing the project sources raised a SyntaxError in src/click/utils.py (missing ':' on an if statement). The black runner imported the repository package (src/black/__init__.py) which caused project code to be loaded and the syntax error to surface.",
+  "evidence_verified": [
+   "File \"/home/vsts/work/1/s/src/click/utils.py\", line 89",
+   "if len(text) <= max_length",
+   "^",
+   "SyntaxError: expected ':'"
+  ],
+  "suggested_fixes": [
+   "Fix the syntax error in src/click/utils.py (add the missing ':' on the if statement).",
+   "Run the formatter/linter locally or in CI after fixing syntax to verify the error is resolved.",
+   "Avoid the CI runner importing the repository package when invoking tools: run black inside an isolated virtualenv or container, or adjust PYTHONPATH so src/black does not shadow the black tool."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ecdb5711dc870d3f7742e1f2": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "flake8 failed due to an unused import (F401) in src/click/utils.py, causing the step to exit with code 1.",
+  "likely_cause": "flake8 failed due to an unused import (F401) in src/click/utils.py, causing the step to exit with code 1.",
+  "evidence_verified": [
+   "Script contents:",
+   "flake8 --select=F --exclude=src/click/__init__.py src",
+   "src/click/utils.py:7:1: F401 'json' imported but unused"
+  ],
+  "suggested_fixes": [
+   "Remove the unused import 'json' from src/click/utils.py or use it where intended.",
+   "Run flake8 locally (or in a pre-commit hook) to catch F401 before pushing.",
+   "If the import must remain for compatibility, explicitly mark it as used (e.g. assign to __all__ or use a # noqa:F401 comment) or adjust flake8 configuration if appropriate."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "a9cba41f46276d6c5f5ef704": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "Pylint detected a missing required argument ('help') in a function call in src/click/utils.py (E1120), causing the lint step to fail and the script to exit with code 2.",
+  "likely_cause": "Pylint detected a missing required argument ('help') in a function call in src/click/utils.py (E1120), causing the lint step to fail and the script to exit with code 2.",
+  "evidence_verified": [
+   "pylint --errors-only src/click/utils.py src/click/exceptions.py src/click/formatting.py src/click/parser.py",
+   "src/click/utils.py:680:11: E1120: No value for argument 'help' in function call (no-value-for-parameter)",
+   "##[error]Bash exited with code '2'."
+  ],
+  "suggested_fixes": [
+   "Open src/click/utils.py around line 680 and correct the function call to provide the required 'help' argument.",
+   "If the argument should be optional, modify the function definition to give 'help' a default value.",
+   "If this pylint error is expected for this code path, adjust the pylint configuration to ignore E1120 for this file or the specific line (e.g., with a # pylint: disable=no-value-for-parameter comment).",
+   "Rerun the pipeline after fixing the code or linter configuration."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "085930b9b2eeeb79b702114f": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The black formatter detected an unformatted file (src/click/utils.py) and exited with a non-zero status, causing the step to fail.",
+  "likely_cause": "The black formatter detected an unformatted file (src/click/utils.py) and exited with a non-zero status, causing the step to fail.",
+  "evidence_verified": [
+   "would reformat src/click/utils.py",
+   "1 file would be reformatted, 5 files would be left unchanged.",
+   "##[error]Bash exited with code '1'.",
+   "black --check src/click/utils.py src/click/exceptions.py src/click/formatting.py src/click/parser.py src/click/globals.py src/click/decorators.py"
+  ],
+  "suggested_fixes": [
+   "Run black to format the repository and commit the changes (black src/click/utils.py or black .).",
+   "Update contributors' workflow or pre-commit hook to run black before pushing.",
+   "If you want CI to auto-fix, run black (not --check) in the pipeline or add a formatting job that opens a PR with fixes."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "868cdff29f969da267d49578": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Dockerfile tries to COPY README.rst into the image but that file is not present in the build context, causing the docker build to fail when calculating the checksum for /README.rst.",
+  "likely_cause": "The Dockerfile tries to COPY README.rst into the image but that file is not present in the build context, causing the docker build to fail when calculating the checksum for /README.rst.",
+  "evidence_verified": [
+   "#7 [3/5] COPY pyproject.toml README.rst LICENSE.txt ./",
+   "#7 ERROR: failed to calculate checksum of ref 6134b6ae-8eb1-4f62-889e-a360c80bcfbf::mer38llu8zxgvbfvavfnl6kte: \"/README.rst\": not found",
+   "> [3/5] COPY pyproject.toml README.rst LICENSE.txt ./:",
+   "ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 6134b6ae-8eb1-4f62-889e-a360c80bcfbf::mer38llu8zxgvbfvavfnl6kte: \"/README.rst\": not found"
+  ],
+  "suggested_fixes": [
+   "Add README.rst to the repository/build context at the repository root so COPY can find it.",
+   "If README.rst is optional, remove it from the Dockerfile COPY line or guard the copy with a multi-stage conditional (or copy only existing files).",
+   "Check .dockerignore to ensure README.rst isn\u2019t being excluded from the build context.",
+   "Verify the build is run from the repository root (or pass the correct build context directory to docker build)."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "d9f21e3854359fc4aa2f8a21": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "Flake8 reported an undefined name 'os_path_join' in src/click/utils.py (likely a typo or missing import/definition in the code).",
+  "likely_cause": "Flake8 reported an undefined name 'os_path_join' in src/click/utils.py (likely a typo or missing import/definition in the code).",
+  "evidence_verified": [
+   "src/click/utils.py:680:12: F821 undefined name 'os_path_join'",
+   "##[error]Bash exited with code '1'.",
+   "flake8 --select=F --exclude=src/click/__init__.py src"
+  ],
+  "suggested_fixes": [
+   "Open src/click/utils.py and fix the undefined name at line ~680 (replace 'os_path_join' with the correct symbol).",
+   "If the intention was to use the standard path join, change to os.path.join or add: from os.path import join as os_path_join.",
+   "Run flake8 locally before pushing to CI to confirm the issue is resolved.",
+   "Add a unit or linting pre-commit hook to catch F821 errors earlier."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "1cdd628dc809e0315ddf2e89": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "ESLint found a syntax/style error (missing semicolon) in src/cart.js which caused the lint step to exit with a non\u2011zero status.",
+  "likely_cause": "ESLint found a syntax/style error (missing semicolon) in src/cart.js which caused the lint step to exit with a non\u2011zero status.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/web/src/cart.js",
+   "4:25  error  Missing semicolon  semi",
+   "\u2716 1 problem (1 error, 0 warnings)",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Add the missing semicolon at the indicated location in src/cart.js (line 4, column 25) and commit the change.",
+   "Run `npx eslint src --fix` locally to auto-fix fixable issues before pushing.",
+   "Add a pre-commit or pre-push lint step (e.g., Husky + lint-staged) to catch and fix lint errors locally.",
+   "If desired, modify the pipeline to show a more helpful lint failure message or suggest `eslint --fix` in the CI output."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c3788d4a01fa4c8de7126a26": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "pip dependency resolution failed: flake8==7.4.1 requires pycodestyle>=2.15.0,<2.16.0 but the pipeline requests pycodestyle==2.5.0 (incompatible), so pip raised ResolutionImpossible.",
+  "likely_cause": "pip dependency resolution failed: flake8==7.4.1 requires pycodestyle>=2.15.0,<2.16.0 but the pipeline requests pycodestyle==2.5.0 (incompatible), so pip raised ResolutionImpossible.",
+  "evidence_verified": [
+   "ERROR: Cannot install flake8==7.4.1 and pycodestyle==2.5.0 because these package versions have conflicting dependencies.",
+   "The conflict is caused by:",
+   "The user requested pycodestyle==2.5.0",
+   "flake8 7.4.1 depends on pycodestyle<2.16.0 and >=2.15.0"
+  ],
+  "suggested_fixes": [
+   "Remove or update the explicit pycodestyle==2.5.0 pin so it can satisfy flake8 (e.g., allow pycodestyle>=2.15,<2.16 or remove the version to let pip choose).",
+   "Pin compatible versions together (for example, upgrade pycodestyle to a 2.15.x release or downgrade flake8 to a version compatible with pycodestyle==2.5.0).",
+   "Use a constraints file or update your requirements lockfile (pip-tools/poetry/Pipfile.lock) to produce a resolvable set of packages before running the pipeline.",
+   "If quick testing is needed, run pip install with the updated requirements locally or in a container to verify resolution before committing to CI."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "fbe07a9290df02a8dfa4fc86": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "The test attempted to require a non-existent module './cartt' (likely a typo or incorrect path/case), causing Jest to fail immediately with module not found.",
+  "likely_cause": "The test attempted to require a non-existent module './cartt' (likely a typo or incorrect path/case), causing Jest to fail immediately with module not found.",
+  "evidence_verified": [
+   "Cannot find module './cartt' from 'src/cart.test.js'",
+   "> 1 | const { addItem, total, applyDiscount } = require(\"./cartt\");"
+  ],
+  "suggested_fixes": [
+   "Fix the require/import in src/cart.test.js to the correct module path (e.g. require(\"./cart\") if the file is cart.js).",
+   "Ensure the target module file exists in the repository and its filename matches exactly (consider case sensitivity on Linux).",
+   "Run tests locally (npx jest) after making the correction to verify the suite loads successfully."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "53e703f50ccb1a6bd9ce5007": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Docker build failed because the base image tag 'python:3.99-slim' could not be found on Docker Hub (invalid/nonexistent image tag).",
+  "likely_cause": "The Docker build failed because the base image tag 'python:3.99-slim' could not be found on Docker Hub (invalid/nonexistent image tag).",
+  "evidence_verified": [
+   "#2 ERROR: docker.io/library/python:3.99-slim: not found",
+   "ERROR: failed to build: failed to solve: python:3.99-slim: failed to resolve source metadata for docker.io/library/python:3.99-slim: docker.io/library/python:3.99-slim: not found",
+   "1 | >>> FROM python:3.99-slim"
+  ],
+  "suggested_fixes": [
+   "Use a valid Python base image tag in the Dockerfile (e.g. python:3.9-slim or python:3.11-slim) and commit the change.",
+   "Verify available tags on Docker Hub for the official python image and update the Dockerfile to a supported tag.",
+   "If you need a custom image, push that image to your registry and reference the correct registry/name:tag in the Dockerfile."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "924a55e971b3a5c5320f766b": {
+  "category": "dependency",
+  "confidence": "medium",
+  "cause": "pip could not reach the configured package index (https://pypi.corp.invalid/simple) to download build dependency flit_core, causing install to fail.",
+  "likely_cause": "pip could not reach the configured package index (https://pypi.corp.invalid/simple) to download build dependency flit_core, causing install to fail.",
+  "evidence_verified": [
+   "#10 1.482 Looking in indexes: https://pypi.corp.invalid/simple",
+   "#10 9.517       WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f30c9392690>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/flit-core/",
+   "#10 9.517       ERROR: Could not find a version that satisfies the requirement flit_core<4,>=3.11 (from versions: none)",
+   "#10 ERROR: process \"/bin/sh -c pip install --no-cache-dir --index-url https://pypi.corp.invalid/simple .\" did not complete successfully: exit code: 1"
+  ],
+  "suggested_fixes": [
+   "Verify that https://pypi.corp.invalid resolves from the runner (DNS) and is reachable from the build environment; fix DNS or network/HTTP proxy settings if needed.",
+   "If the index is internal, ensure the package index service is up and that the runner has network access to it.",
+   "As a fallback, point pip to a reachable index (e.g., public PyPI) or provide a local wheel/cache for build dependencies such as flit_core.",
+   "Consider vendoring/building required build dependencies into the image or adding a requirements lock to avoid runtime index access during docker build."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "d9910e7edf2da711c61b5696": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "ESLint reported an unused variable in src/cart.js, causing the lint step to fail and the job to exit with code 1.",
+  "likely_cause": "ESLint reported an unused variable in src/cart.js, causing the lint step to fail and the job to exit with code 1.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/web/src/cart.js",
+   "3:7  error  'unused' is assigned a value but never used  no-unused-vars",
+   "\u2716 1 problem (1 error, 0 warnings)",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Edit src/cart.js to remove the unused variable or use it where intended.",
+   "If the variable is intentionally unused, prefix it with an underscore (e.g. _unused) or disable the rule for that line with a comment: // eslint-disable-next-line no-unused-vars",
+   "If this is acceptable project-wide, adjust the ESLint no-unused-vars rule in your ESLint config to allow the pattern you need."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "0c350f0b15f013905329bc83": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Dockerfile contains a typo on line 1: the instruction is 'FORM' instead of the valid 'FROM', causing the docker build to fail with a parse error.",
+  "likely_cause": "The Dockerfile contains a typo on line 1: the instruction is 'FORM' instead of the valid 'FROM', causing the docker build to fail with a parse error.",
+  "evidence_verified": [
+   "Dockerfile:1",
+   "1 | >>> FORM python:3.12-slim",
+   "ERROR: failed to build: failed to solve: dockerfile parse error on line 1: unknown instruction: FORM (did you mean FROM?)",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Correct the Dockerfile first line to 'FROM python:3.12-slim' and re-run the pipeline.",
+   "Add a Dockerfile linter or a quick 'docker build' syntax check as an earlier pipeline step to catch typos before the full build.",
+   "Optionally run a local 'docker build' of the repository to validate the Dockerfile before pushing changes."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "6b5b79e2f54741bc1e680bf3": {
+  "category": "script-failure",
+  "confidence": "high",
+  "cause": "Jest tests completed successfully but the test process did not exit due to open asynchronous handles (Jest reported it \u201cdid not exit one second after the test run has completed\u201d), causing the pipeline step to be canceled.",
+  "likely_cause": "Jest tests completed successfully but the test process did not exit due to open asynchronous handles (Jest reported it \u201cdid not exit one second after the test run has completed\u201d), causing the pipeline step to be canceled.",
+  "evidence_verified": [
+   "Jest did not exit one second after the test run has completed.",
+   "'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.",
+   "##[error]The Operation will be canceled. The next steps may not contain expected logs."
+  ],
+  "suggested_fixes": [
+   "Run Jest with --detectOpenHandles to identify what keeps the process alive (add to npx jest command).",
+   "Ensure tests clean up async resources: close timers, DB connections, servers, or file handles in afterAll/afterEach hooks.",
+   "If necessary as a temporary workaround, run Jest with --forceExit to force the process to exit (not recommended as a permanent fix).",
+   "Increase the task timeout only if the step is being canceled by the pipeline timeout after investigating the underlying open handles."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "f8ca3a9e023376f3cf36f75f": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Go build failed because a required module (github.com/acme-internal/pricing) is not provided in the module files or vendor; the go tool suggests adding it with 'go get'.",
+  "likely_cause": "The Go build failed because a required module (github.com/acme-internal/pricing) is not provided in the module files or vendor; the go tool suggests adding it with 'go get'.",
+  "evidence_verified": [
+   "cart.go:3:8: no required module provides package github.com/acme-internal/pricing; to add it:",
+   "go get github.com/acme-internal/pricing"
+  ],
+  "suggested_fixes": [
+   "Add the missing dependency to the project (run locally: go get github.com/acme-internal/pricing@<version> and commit the updated go.mod and go.sum).",
+   "If the dependency is private, ensure the CI has access (credentials, GOPRIVATE or replace directive) so 'go get' can fetch it.",
+   "Alternatively vendor dependencies (go mod vendor) and configure the build to use the vendor directory."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "6b157479432ef2cbb7a784f9": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A test references a non-existent fixture named 'tmpdirr' (typo), causing pytest to error at setup.",
+  "likely_cause": "A test references a non-existent fixture named 'tmpdirr' (typo), causing pytest to error at setup.",
+  "evidence_verified": [
+   "E       fixture 'tmpdirr' not found",
+   ">       available fixtures: capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, runner, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory",
+   "/home/vsts/work/1/s/tests/test_fixture_typo.py:1",
+   "2262 passed, 24 skipped, 31000 deselected, 1 xfailed, 1 error in 6.90s"
+  ],
+  "suggested_fixes": [
+   "Correct the fixture name in tests/test_fixture_typo.py (use tmpdir or tmp_path)",
+   "If a custom fixture was intended, add/declare it in conftest.py or the test module",
+   "Run pytest --fixtures to verify available fixture names before committing"
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "46ce0ead9c8dc600f0860a6a": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test assertion failed: com.example.CartTest.appliesADiscount expected 170 but actual value was 185, causing Maven to fail the test phase.",
+  "likely_cause": "A unit test assertion failed: com.example.CartTest.appliesADiscount expected 170 but actual value was 185, causing Maven to fail the test phase.",
+  "evidence_verified": [
+   "[ERROR] com.example.CartTest.appliesADiscount -- Time elapsed: 0.052 s <<< FAILURE!",
+   "org.opentest4j.AssertionFailedError: expected: <170> but was: <185>",
+   "[ERROR]   CartTest.appliesADiscount:16 expected: <170> but was: <185>",
+   "[ERROR] BUILD FAILURE"
+  ],
+  "suggested_fixes": [
+   "Open com.example.CartTest (line 16) and confirm the expected discount value is correct for current business rules; update the test if the requirement changed.",
+   "Inspect the discount calculation code in the Cart implementation to find why it returns 185 instead of 170 and fix the logic.",
+   "Run mvn -Dtest=com.example.CartTest test locally to reproduce and debug; add logging or breakpoints to trace calculation values.",
+   "If the change is intentional, update the test assertions and add a comment linking to the requirement change to avoid future confusion."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "bf59fad35ee1d43f9e800f09": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test assertion failed: the test expected a discounted total of 170 but the code produced 185, indicating either the code's discount logic is incorrect or the test expectation is outdated.",
+  "likely_cause": "A unit test assertion failed: the test expected a discounted total of 170 but the code produced 185, indicating either the code's discount logic is incorrect or the test expectation is outdated.",
+  "evidence_verified": [
+   "[xUnit.net 00:00:00.22]     CartTests.AppliesADiscount [FAIL]",
+   "Error Message:",
+   "Assert.Equal() Failure: Values differ",
+   "Expected: 170",
+   "Actual:   185"
+  ],
+  "suggested_fixes": [
+   "Run the failing test locally and reproduce the calculation to confirm whether the code or the test is wrong.",
+   "If the code is incorrect, fix the discount calculation in the Cart implementation so it produces the expected total (170) and add unit tests covering edge cases.",
+   "If the test expectation is outdated, update the test to reflect the correct business requirement and add comments explaining the expected behavior.",
+   "Add logging or diagnostic output around the discount calculation to capture inputs and intermediate values for future troubleshooting."
+  ],
+  "verified": 5,
+  "quoted": 5
+ },
+ "2349b382f937e848cd8f5849": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test (CartTest.totalsTheCart) triggered a java.lang.NullPointerException in Cart.total because the 'items' list is null and code attempts to iterate it.",
+  "likely_cause": "A unit test (CartTest.totalsTheCart) triggered a java.lang.NullPointerException in Cart.total because the 'items' list is null and code attempts to iterate it.",
+  "evidence_verified": [
+   "java.lang.NullPointerException: Cannot invoke \"java.util.List.iterator()\" because \"items\" is null",
+   "at com.example.Cart.total(Cart.java:10)",
+   "[ERROR]   CartTest.totalsTheCart:11 \u00bb NullPointer Cannot invoke \"java.util.List.iterator()\" because \"items\" is null",
+   "[ERROR] Tests run: 2, Failures: 0, Errors: 1, Skipped: 0"
+  ],
+  "suggested_fixes": [
+   "Defensive code: check for null before iterating (e.g. if (items == null) return 0 or Collections.emptyList()).",
+   "Ensure Cart initializes its items list (e.g. items = new ArrayList<>()) in the constructor.",
+   "Fix the test setup to populate or initialize the Cart's items prior to calling total().",
+   "Add a unit test asserting behavior when items is null to prevent regressions."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "b844391a3bb67b8cab65d48d": {
+  "category": "network",
+  "confidence": "medium",
+  "cause": "The dotnet restore failed because NuGet could not load the service index from the configured package source (https://nuget.corp.invalid/v3/index.json) \u2014 the feed is unreachable or misconfigured.",
+  "likely_cause": "The dotnet restore failed because NuGet could not load the service index from the configured package source (https://nuget.corp.invalid/v3/index.json) \u2014 the feed is unreachable or misconfigured.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1301: Unable to load the service index for source https://nuget.corp.invalid/v3/index.json.",
+   "Failed to restore /home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj (in 10.97 sec)."
+  ],
+  "suggested_fixes": [
+   "Verify the NuGet package source URL in NuGet.config or pipeline settings and correct it if it is wrong (remove or replace nuget.corp.invalid).",
+   "Ensure the runner has network access to the internal NuGet feed and that DNS resolves nuget.corp.invalid from the runner host.",
+   "If the feed requires authentication, configure the pipeline/runner with the proper credentials or service connection before running restore.",
+   "Retry the job after fixing the feed/configuration; run dotnet restore manually on the runner host to validate connectivity."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "870f4cc3f2d5d5808d4e385b": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "Compilation failed because the code calls a method quantity() on com.example.Cart.Item that does not exist (cannot find symbol).",
+  "likely_cause": "Compilation failed because the code calls a method quantity() on com.example.Cart.Item that does not exist (cannot find symbol).",
+  "evidence_verified": [
+   "[ERROR] /home/vsts/work/1/s/java/src/main/java/com/example/Cart.java:[11,39] cannot find symbol",
+   "[ERROR]   symbol:   method quantity()",
+   "[ERROR]   location: variable item of type com.example.Cart.Item"
+  ],
+  "suggested_fixes": [
+   "Add the missing quantity() method to com.example.Cart.Item or correct the call to the actual method name (e.g., getQuantity()).",
+   "If the method is defined in another class, ensure the correct class/instance is used or import is fixed.",
+   "Re-run the build locally (mvn -B -ntp test) and/or with -X to get full debug output if further diagnostics are needed."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "30dbd2d6a3230abe3ebd3416": {
+  "category": "script-failure",
+  "confidence": "high",
+  "cause": "The Dockerfile runs 'chmod +x /nonexistent.sh' but that file is not present in the image build context, causing the RUN command to fail with exit code 1.",
+  "likely_cause": "The Dockerfile runs 'chmod +x /nonexistent.sh' but that file is not present in the image build context, causing the RUN command to fail with exit code 1.",
+  "evidence_verified": [
+   "#11 [6/6] RUN chmod +x /nonexistent.sh",
+   "#11 0.177 chmod: cannot access '/nonexistent.sh': No such file or directory",
+   "ERROR: failed to build: failed to solve: process \"/bin/sh -c chmod +x /nonexistent.sh\" did not complete successfully: exit code: 1",
+   "Dockerfile:6"
+  ],
+  "suggested_fixes": [
+   "If the script should exist, add it to the build context and COPY it into the image before the RUN chmod step (e.g. COPY nonexistent.sh /nonexistent.sh).",
+   "If the chmod is unnecessary, remove the 'RUN chmod +x /nonexistent.sh' line from the Dockerfile.",
+   "If the file is at a different path, update the Dockerfile to use the correct path.",
+   "Consider adding a quick check in the Dockerfile (e.g. RUN [ -f /nonexistent.sh ] && chmod +x /nonexistent.sh) to avoid build failure when optional."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ba8fe7017b9e51569373b759": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "gofmt detected improperly formatted Go source (cart.go), causing the format check script to exit with code 1.",
+  "likely_cause": "gofmt detected improperly formatted Go source (cart.go), causing the format check script to exit with code 1.",
+  "evidence_verified": [
+   "test -z \"$(gofmt -l .)\" || { gofmt -l .; exit 1; }",
+   "cart.go",
+   "##[error]Bash exited with code '1'.",
+   "========================== Starting Command Output ==========================="
+  ],
+  "suggested_fixes": [
+   "Reformat the repository with gofmt (for example: gofmt -w .) and commit the changes.",
+   "Run gofmt or goimports locally before pushing (or add a pre-commit hook) to prevent future CI failures.",
+   "If you want the CI to auto-fix formatting, change the pipeline step to run gofmt -w . instead of failing the build."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c8a4989a4b6f47613c784aa4": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Cart.csproj file is malformed XML: a mismatched/typoed end tag ('PropertyGrou' instead of 'PropertyGroup') prevents dotnet from loading the project.",
+  "likely_cause": "The Cart.csproj file is malformed XML: a mismatched/typoed end tag ('PropertyGrou' instead of 'PropertyGroup') prevents dotnet from loading the project.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart/Cart.csproj(7,5): error MSB4025: The project file could not be loaded. The 'PropertyGroup' start tag on line 3 position 4 does not match the end tag of 'PropertyGrou'. Line 7, position 5."
+  ],
+  "suggested_fixes": [
+   "Open dotnet/Cart/Cart.csproj and correct the mismatched XML tag (e.g., change '</PropertyGrou>' to '</PropertyGroup>').",
+   "Validate the .csproj XML (e.g., xmllint or an editor with XML validation) to ensure there are no other malformed tags.",
+   "Re-run dotnet restore locally after fixing the file to confirm the restore step succeeds before pushing changes.",
+   "If the file was generated or templated, fix the generator/template that produced the truncated/typo tag to prevent regression."
+  ],
+  "verified": 1,
+  "quoted": 1
+ },
+ "59dbda8ec1202383b779c78d": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The Go compiler failed due to a syntax error in cart.go at line 18 (an unexpected token 'Discount' where '(' was expected). This is a source code / build error, not a runner problem.",
+  "likely_cause": "The Go compiler failed due to a syntax error in cart.go at line 18 (an unexpected token 'Discount' where '(' was expected). This is a source code / build error, not a runner problem.",
+  "evidence_verified": [
+   "./cart.go:18:6: syntax error: unexpected Discount, expected (",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Open cart.go and inspect line 18 for incorrect syntax (e.g., a malformed type, function, or composite literal).",
+   "Correct the syntax (for example ensure declarations use proper parentheses/braces and that identifiers like Discount are used in valid contexts).",
+   "Run 'go build' locally to verify the fix before committing.",
+   "Add a pre-merge CI check that runs 'go vet' and 'go fmt' to catch similar issues early."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "96211b64dc4996a66aeb2eb9": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "Maven failed dependency resolution for com.acme:pricing:jar:1.0 \u2014 the POM/artifact is missing and the requested path is not allowed from the central repository, so Maven could not fetch the dependency.",
+  "likely_cause": "Maven failed dependency resolution for com.acme:pricing:jar:1.0 \u2014 the POM/artifact is missing and the requested path is not allowed from the central repository, so Maven could not fetch the dependency.",
+  "evidence_verified": [
+   "[WARNING] The POM for com.acme:pricing:jar:1.0 is missing, no dependency information available",
+   "[ERROR] Failed to execute goal on project cart: Could not resolve dependencies for project com.example:cart:jar:1.0.0",
+   "[ERROR] dependency: com.acme:pricing:jar:1.0 (compile)",
+   "[ERROR] \tprefixes: Path com/acme/pricing/1.0/pricing-1.0.jar NOT allowed from central"
+  ],
+  "suggested_fixes": [
+   "Publish com.acme:pricing:1.0 (POM and JAR) to a repository the build can access (e.g., internal Nexus/Artifactory) and ensure the repository is configured in pom.xml or settings.xml.",
+   "If the artifact is internal-only, install it to the runner's local Maven repository (mvn install) or use a CI step to deploy it to the artifact repo before the build step.",
+   "Update pom.xml or settings.xml to reference the correct repository that hosts com.acme artifacts (and ensure repository URL and permissions are correct).",
+   "If the dependency coordinate is wrong, correct the groupId/artifactId/version in pom.xml to a published version."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "725c3eb366634221e9f6c7aa": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy reported a type error in src/click/utils.py: a function returns an int where a str was expected.",
+  "likely_cause": "mypy reported a type error in src/click/utils.py: a function returns an int where a str was expected.",
+  "evidence_verified": [
+   "src/click/utils.py:680: error: Incompatible return value type (got \"int\",",
+   "expected \"str\")  [return-value]",
+   "return x",
+   "Found 1 error in 1 file (checked 29 source files)"
+  ],
+  "suggested_fixes": [
+   "Inspect src/click/utils.py at the indicated line and fix the function's return so it matches the declared/expected type (return a str instead of an int).",
+   "If returning an int is intended, update the function's type annotations (or the callers') to reflect the actual return type.",
+   "As a temporary measure, adjust mypy config (e.g., type-ignore or modify strictness) if this case should be permitted, but prefer correcting the code."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "cb8c55f68258c7e0832d8dac": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "go vet found a formatting mismatch: fmt.Sprintf uses %d while the argument 'price' is a string, causing go vet to fail the Vet step.",
+  "likely_cause": "go vet found a formatting mismatch: fmt.Sprintf uses %d while the argument 'price' is a string, causing go vet to fail the Vet step.",
+  "evidence_verified": [
+   "./cart.go:26:9: fmt.Sprintf format %d has arg \"price\" of wrong type string",
+   "go vet ./..."
+  ],
+  "suggested_fixes": [
+   "Fix the formatting call in cart.go: either change the verb to %s or convert price to a numeric type before using %d.",
+   "Run go vet locally (go vet ./...) and/or add a pre-commit/CI check to catch format mismatches earlier.",
+   "Add a small unit test that exercises the code path to prevent regressions if appropriate."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "e8d9ece35451318062880f4f": {
+  "category": "script-failure",
+  "confidence": "high",
+  "cause": "The command executed a Python expression that dereferenced a null pointer (ctypes.string_at(0)), which caused a native segmentation fault (core dumped) and Bash exited with code 139.",
+  "likely_cause": "The command executed a Python expression that dereferenced a null pointer (ctypes.string_at(0)), which caused a native segmentation fault (core dumped) and Bash exited with code 139.",
+  "evidence_verified": [
+   "Script contents:",
+   "python -c \"import ctypes; ctypes.string_at(0)\"",
+   "/home/vsts/work/_temp/2c129954-c4cc-45e9-b0d2-614141232ff7.sh: line 1:  2147 Segmentation fault      (core dumped) python -c \"import ctypes; ctypes.string_at(0)\"",
+   "##[error]Bash exited with code '139'."
+  ],
+  "suggested_fixes": [
+   "Avoid dereferencing a NULL pointer in the script \u2014 change the test to not call ctypes.string_at(0) or to validate the pointer first.",
+   "If the intent is to test native crash handling, run this under a debugger/sanitizer or capture core/backtrace for diagnosis (enable core dumps and collect gdb backtrace).",
+   "Run the check on a supported Python build or add a wrapper that traps native crashes so the pipeline can record diagnostics instead of failing silently."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "5ffa6dd6a409ed824c703f1d": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy failed the Type check step because of an unused \"type: ignore\" comment in src/click/utils.py, causing the command to exit with non-zero status.",
+  "likely_cause": "mypy failed the Type check step because of an unused \"type: ignore\" comment in src/click/utils.py, causing the command to exit with non-zero status.",
+  "evidence_verified": [
+   "src/click/utils.py:679: error: Unused \"type: ignore\" comment  [unused-ignore]",
+   "_LIMIT: int = 1  # type: ignore",
+   "Found 1 error in 1 file (checked 29 source files)",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Edit src/click/utils.py and remove the unnecessary \"# type: ignore\" on line 679 (or replace it with a more specific ignore if a real mypy issue exists).",
+   "Run mypy locally to verify the change before pushing.",
+   "If the ignore is intentionally needed elsewhere, update the code so the ignore is actually required or scope it to a specific error code; otherwise remove it to satisfy mypy."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "53c4d672ac3ea116de66c266": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The C# source file Cart.cs has a syntax error (missing semicolon) at line 9, column 20 causing the dotnet build to fail.",
+  "likely_cause": "The C# source file Cart.cs has a syntax error (missing semicolon) at line 9, column 20 causing the dotnet build to fail.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart/Cart.cs(9,20): error CS1002: ; expected [/home/vsts/work/1/s/dotnet/Cart/Cart.csproj]",
+   "Build FAILED.",
+   "0 Warning(s)",
+   "1 Error(s)"
+  ],
+  "suggested_fixes": [
+   "Open dotnet/Cart/Cart.cs and add the missing semicolon (or otherwise correct the syntax) at line 9, column 20.",
+   "Run dotnet build locally (or in a dev container) to verify the fix before pushing.",
+   "Add a pre-merge CI step or editor/IDE linting to catch syntax errors earlier."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "a8666c8c67507083aadaf7d1": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The C# build failed due to a compilation error CS1061: the type 'Item' does not define a 'Quantity' member used in Cart.cs.",
+  "likely_cause": "The C# build failed due to a compilation error CS1061: the type 'Item' does not define a 'Quantity' member used in Cart.cs.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart/Cart.cs(12,38): error CS1061: 'Item' does not contain a definition for 'Quantity' and no accessible extension method 'Quantity' accepting a first argument of type 'Item' could be found (are you missing a using directive or an assembly reference?) [/home/vsts/work/1/s/dotnet/Cart/Cart.csproj]",
+   "Build FAILED.",
+   "0 Warning(s)",
+   "1 Error(s)"
+  ],
+  "suggested_fixes": [
+   "Add or expose a 'Quantity' property or method on the Item class used by Cart.cs (or rename the reference to the correct member).",
+   "If 'Quantity' exists in another type or namespace, add the correct using directive or reference the correct assembly/project.",
+   "Run 'dotnet build' locally to reproduce and fix the compile error before pushing changes."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "acdd77857401a6255cc76235": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "dotnet restore failed because the package 'Acme.Internal.Kit' could not be found in the configured sources (only nuget.org is listed). The project depends on a package that is not available on nuget.org and no alternate feed or credentials were configured.",
+  "likely_cause": "dotnet restore failed because the package 'Acme.Internal.Kit' could not be found in the configured sources (only nuget.org is listed). The project depends on a package that is not available on nuget.org and no alternate feed or credentials were configured.",
+  "evidence_verified": [
+   " /home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1101: Unable to find package Acme.Internal.Kit. No packages exist with this id in source(s): nuget.org",
+   "Failed to restore /home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj (in 4.93 sec)."
+  ],
+  "suggested_fixes": [
+   "Ensure the feed that provides Acme.Internal.Kit is configured (add a nuget.config with the private/internal feed) and committed or available to the pipeline.",
+   "If the feed requires authentication, add feed credentials to the pipeline (service connection or pipeline credential task) so dotnet restore can access it.",
+   "Verify the package ID and version referenced in Cart.Tests.csproj are correct, and publish the package to the expected feed if it is missing.",
+   "If the package should come from nuget.org, confirm it has been published there or change the dependency to a package that exists on the configured sources."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "7b3f2bb86a9e8695e3665f46": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The Go build failed because code in cart.go references a non-existent field 'Quantity' on type Item (compile-time error), e.g., it.Quantity is undefined.",
+  "likely_cause": "The Go build failed because code in cart.go references a non-existent field 'Quantity' on type Item (compile-time error), e.g., it.Quantity is undefined.",
+  "evidence_verified": [
+   "./cart.go:13:24: it.Quantity undefined (type Item has no field or method Quantity)",
+   "# example.com/cart"
+  ],
+  "suggested_fixes": [
+   "Open cart.go and correct the field name to match the Item struct (fix typo or use the existing field name).",
+   "Inspect the Item type definition to confirm the correct field name and visibility (exported vs unexported).",
+   "Run go build locally or in a dev container after the change to verify the compile error is resolved.",
+   "Add a build step or pre-commit check to catch compilation errors earlier."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "153c3bdb0fdea64c1e53ae4e": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The build runs 'python -c \"import yaml\"' but PyYAML is not installed in the image; pip successfully installed the package under build, but 'yaml' module is missing leading to ModuleNotFoundError.",
+  "likely_cause": "The build runs 'python -c \"import yaml\"' but PyYAML is not installed in the image; pip successfully installed the package under build, but 'yaml' module is missing leading to ModuleNotFoundError.",
+  "evidence_verified": [
+   "#10 48.42 ModuleNotFoundError: No module named 'yaml'",
+   "5 | >>> RUN pip install --no-cache-dir . && python -c \"import yaml\"",
+   "ERROR: failed to build: failed to solve: process \"/bin/sh -c pip install --no-cache-dir . && python -c \\\"import yaml\\\"\" did not complete successfully: exit code: 1"
+  ],
+  "suggested_fixes": [
+   "Add PyYAML as a dependency in pyproject.toml (e.g., pyyaml) so 'pip install .' installs the yaml module.",
+   "Alternatively, modify the Dockerfile RUN command to install PyYAML explicitly (pip install pyyaml) before running the import check.",
+   "If the import is only a sanity check, remove or adjust the python -c \"import yaml\" command."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "a158bb918e7df6becf8f738a": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Go toolchain failed to parse go.mod because the 'go' directive has an invalid version string '1.2x' (syntax error in go.mod).",
+  "likely_cause": "The Go toolchain failed to parse go.mod because the 'go' directive has an invalid version string '1.2x' (syntax error in go.mod).",
+  "evidence_verified": [
+   "go: errors parsing go.mod:",
+   "go.mod:3: invalid go version '1.2x': must match format 1.23.0"
+  ],
+  "suggested_fixes": [
+   "Edit go.mod and correct the 'go' directive to a valid version string (e.g. 'go 1.20' or 'go 1.20.4').",
+   "Run 'go mod tidy' locally to validate module file syntax before committing.",
+   "Add a CI check or pre-commit hook to validate go.mod formatting/version strings."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "cc92c222dc9731bc0a20fbf4": {
+  "category": "script-failure",
+  "confidence": "high",
+  "cause": "The check_catalog.py script detected a checksum mismatch for items.json (expected 9f2c but got 77ab), causing the script to exit with error code 1.",
+  "likely_cause": "The check_catalog.py script detected a checksum mismatch for items.json (expected 9f2c but got 77ab), causing the script to exit with error code 1.",
+  "evidence_verified": [
+   "ERROR: catalog checksum mismatch for items.json (expected 9f2c, got 77ab)",
+   "##[error]Bash exited with code '1'.",
+   "Script contents:",
+   "python scripts/check_catalog.py"
+  ],
+  "suggested_fixes": [
+   "Verify that the items.json used in the run is the correct and current file (regenerate or pull the expected version).",
+   "If items.json intentionally changed, update the expected checksum used by scripts/check_catalog.py or the stored expected value.",
+   "Add a pre-check step to log the items.json checksum and source (artifact or generated) to help diagnose future mismatches.",
+   "Re-run the pipeline after ensuring the artifact or generation step that produces items.json completed successfully and produced the expected contents."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "8a2225308a0f532b656c6bec": {
+  "category": "test-failure",
+  "confidence": "medium",
+  "cause": "Multiple tests are asserting the exact prompt text (capitalization of the default choice) but the program under test is emitting the opposite capitalization: tests expect '... [y/N] ...' while output is '... [Y/n] ...'. This mismatch in prompt formatting caused the assertion failures.",
+  "likely_cause": "Multiple tests are asserting the exact prompt text (capitalization of the default choice) but the program under test is emitting the opposite capitalization: tests expect '... [y/N] ...' while output is '... [Y/n] ...'. This mismatch in prompt formatting caused the assertion failures.",
+  "evidence_verified": [
+   "E   AssertionError: assert 'Flag [Y/n]: y\\nTrue\\n' == 'Flag [y/N]: y\\nTrue\\n'",
+   "E   AssertionError: assert 'Foo [Y/n]: y\\nyes!\\n' == 'Foo [y/N]: y\\nyes!\\n'",
+   "E   AssertionError: assert 'Prompt to stdin [Y/n]: ' == 'Prompt to stdin [y/N]: '",
+   "E   AssertionError: assert ['OK [Y/n]: '] == ['OK [y/N]: ']"
+  ],
+  "suggested_fixes": [
+   "If the change in capitalization is intended, update the tests to expect 'Y/n' where appropriate.",
+   "If the tests are correct, revert or fix the code that generates the prompt so it emits the expected capitalization '[y/N]'.",
+   "Add or update unit tests to assert behavior in a way that's robust to capitalization if the casing is not semantically important (e.g., normalize case before comparison or test the default boolean instead of exact string).",
+   "Run the failing tests locally and inspect the prompt-generation function to determine whether a recent change altered the default-choice formatting."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ae1b15e14228dafa5d2c20af": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "Maven failed to resolve the test dependency org.junit.jupiter:junit-jupiter:jar:5.99.0 from the configured repository (central). The POM for that artifact is missing and the artifact could not be found in Maven Central.",
+  "likely_cause": "Maven failed to resolve the test dependency org.junit.jupiter:junit-jupiter:jar:5.99.0 from the configured repository (central). The POM for that artifact is missing and the artifact could not be found in Maven Central.",
+  "evidence_verified": [
+   "[WARNING] The POM for org.junit.jupiter:junit-jupiter:jar:5.99.0 is missing, no dependency information available",
+   "[ERROR] Could not find artifact org.junit.jupiter:junit-jupiter:jar:5.99.0 in central (https://repo.maven.apache.org/maven2)"
+  ],
+  "suggested_fixes": [
+   "Verify the dependency coordinates in pom.xml (groupId, artifactId, version) and correct them if mistyped.",
+   "Use a released, available JUnit artifact (for example depend on junit-jupiter-api and junit-jupiter-engine with known versions) or update the version to one present in Maven Central.",
+   "If the artifact is hosted in a private or alternative repository, add that repository to the pom.xml or settings.xml so Maven can resolve it.",
+   "If transient network or cache issues are suspected, retry with 'mvn -U test' to force update of snapshots/releases."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "e2e87a64dd865a8da35cf392": {
+  "category": "permissions",
+  "confidence": "high",
+  "cause": "The Dockerfile switches to the non-root user (USER nobody) before running 'pip install', causing pip to attempt a user installation into a home directory that is '/nonexistent' and is not writable, resulting in a permission denied OSError.",
+  "likely_cause": "The Dockerfile switches to the non-root user (USER nobody) before running 'pip install', causing pip to attempt a user installation into a home directory that is '/nonexistent' and is not writable, resulting in a permission denied OSError.",
+  "evidence_verified": [
+   "#10 97.61 ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/nonexistent'",
+   "Dockerfile:6",
+   "4 |     COPY src ./src",
+   "5 |     USER nobody"
+  ],
+  "suggested_fixes": [
+   "Run pip install as a user with write permissions (move pip install step before USER nobody).",
+   "Create a writable HOME for the nobody user (e.g. mkdir -p /home/nobody && chown nobody && set HOME) before running pip.",
+   "Install into a specific prefix or use a virtualenv: pip install --prefix=/some/writable/dir . or python -m venv /opt/venv && /opt/venv/bin/pip install .",
+   "Alternatively, run pip with --no-user and as root in the Dockerfile (ensure appropriate file permissions afterwards)."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "af1259a9feef6b5307e2a143": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "Maven failed to resolve a dependency (com.acme:pricing:1.0) because the configured corporate repository host repo.corp.invalid could not be resolved/ contacted.",
+  "likely_cause": "Maven failed to resolve a dependency (com.acme:pricing:1.0) because the configured corporate repository host repo.corp.invalid could not be resolved/ contacted.",
+  "evidence_verified": [
+   "[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to corp (https://repo.corp.invalid/maven): repo.corp.invalid: Name or service not known",
+   "[ERROR]  Caused by: The following artifacts could not be resolved: com.acme:pricing:pom:1.0 (absent): Could not transfer artifact com.acme:pricing:pom:1.0 from/to corp (https://repo.corp.invalid/maven): repo.corp.invalid"
+  ],
+  "suggested_fixes": [
+   "Verify the repository URL in pom.xml/settings.xml and correct repo.corp.invalid to the reachable host.",
+   "Ensure DNS and network connectivity from the runner to the corporate Maven repo (ping/DNS lookup to the repo host).",
+   "If the artifact should be in a different repository, add that repository to the POM or deploy the missing artifact to a reachable repo.",
+   "Re-run the job with Maven debug (-X) if further diagnostic information is needed."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "b14a8ad1982ed01fe24b6dc1": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The project declares a dependency on 'xunit' with version >= 2.99.0 which is not available from the configured package sources (nuget.org only has up to version 2.9.3).",
+  "likely_cause": "The project declares a dependency on 'xunit' with version >= 2.99.0 which is not available from the configured package sources (nuget.org only has up to version 2.9.3).",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1102: Unable to find package xunit with version (>= 2.99.0)",
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1102:   - Found 107 version(s) in nuget.org [ Nearest version: 2.9.3 ]",
+   "Failed to restore /home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj (in 5.78 sec).",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Fix the package version in Cart.Tests.csproj to an available version (e.g. the nearest available version shown) or to a correct xUnit version.",
+   "If you intended to use a pre-release or internal feed, add that feed to nuget.config or pass --source to dotnet restore so the required version can be found.",
+   "If the version is a typo (2.99.0 looks suspicious), correct it to the intended stable xunit version and retry restore.",
+   "Pin package versions or add a CI step to validate package versions before restore to catch this earlier."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "b1b6ac2850b1b8a0837efb81": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "ESLint reported two errors in src/cart.js: an unused variable 'helper' and an undefined identifier 'discountRate', causing the lint step to exit with code 1.",
+  "likely_cause": "ESLint reported two errors in src/cart.js: an unused variable 'helper' and an undefined identifier 'discountRate', causing the lint step to exit with code 1.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/web/src/cart.js",
+   "15:10  error  'helper' is defined but never used  no-unused-vars",
+   "16:10  error  'discountRate' is not defined       no-undef",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Remove or use the unused 'helper' variable in src/cart.js to satisfy the no-unused-vars rule.",
+   "Define, import, or correctly reference 'discountRate' in src/cart.js so it is not undefined.",
+   "Run ESLint locally (npx eslint src) before pushing changes to catch these errors earlier.",
+   "If these are intentional (e.g., temporarily unused), adjust the code or update ESLint config/rules with a justification and commit the change."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "1cb76e56acfb31a36e28c299": {
+  "category": "script-failure",
+  "confidence": "high",
+  "cause": "The reconciliation script (python scripts/reconcile.py) detected inconsistent shard state and exited with a non-zero code: \"reconciliation incomplete: 3 of 5 shards disagree\", causing the step to fail (Bash exited with code '2').",
+  "likely_cause": "The reconciliation script (python scripts/reconcile.py) detected inconsistent shard state and exited with a non-zero code: \"reconciliation incomplete: 3 of 5 shards disagree\", causing the step to fail (Bash exited with code '2').",
+  "evidence_verified": [
+   "Script contents:",
+   "python scripts/reconcile.py",
+   "reconciliation incomplete: 3 of 5 shards disagree",
+   "##[error]Bash exited with code '2'."
+  ],
+  "suggested_fixes": [
+   "Investigate the shard disagreement by running the script locally with increased logging/verbosity to capture the state of each shard.",
+   "Add detailed diagnostics to reconcile.py (e.g., dump shard identifiers, versions, and timestamps) so failures indicate which shards and what fields differ.",
+   "Add retry or backoff logic if the disagreement can be transient, and consider making the reconciliation idempotent or able to auto-resolve safe conflicts.",
+   "Re-run the reconciliation after resolving underlying causes (e.g., ensuring data replication is complete) and capture full logs for post-mortem."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c3c6ab0f898fb2b085dbddf8": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test failed: TestDiscount returned 185 but expected 170, causing 'go test' to exit non\u2011zero.",
+  "likely_cause": "A unit test failed: TestDiscount returned 185 but expected 170, causing 'go test' to exit non\u2011zero.",
+  "evidence_verified": [
+   "--- FAIL: TestDiscount (0.00s)",
+   "cart_test.go:14: Discount = 185, want 170",
+   "FAIL\texample.com/cart\t0.002s",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Run the failing test locally (go test ./... or go test ./path/to/package) to reproduce and debug the logic that computes the discount.",
+   "Inspect the code under test to find why it returns 185 instead of 170 and correct the implementation or the test expectation as appropriate.",
+   "If the expected value in the test is outdated, update the test to the correct expected behavior and add assertions for edge cases.",
+   "Add more targeted unit tests or logging in the discount calculation to guard against regressions, then re-run the pipeline."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "d6191610317226d9a5b0f0cd": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "dotnet format detected a whitespace formatting violation in Cart/Cart.cs causing the formatter verification to fail (dotnet format returned non-zero).",
+  "likely_cause": "dotnet format detected a whitespace formatting violation in Cart/Cart.cs causing the formatter verification to fail (dotnet format returned non-zero).",
+  "evidence_verified": [
+   "Script contents:",
+   "dotnet format Cart/Cart.csproj --verify-no-changes",
+   "/home/vsts/work/1/s/dotnet/Cart/Cart.cs(9,7): error WHITESPACE: Fix whitespace formatting. Insert '\\s\\s'. [/home/vsts/work/1/s/dotnet/Cart/Cart.csproj]",
+   "##[error]Bash exited with code '2'."
+  ],
+  "suggested_fixes": [
+   "Run 'dotnet format Cart/Cart.csproj' locally or in CI to apply the whitespace fixes, then commit the changes.",
+   "Alternatively, update the CI step to run the formatter automatically instead of --verify-no-changes, or add a pre-commit/CI job to auto-format before verification.",
+   "If the whitespace rule is undesired, adjust the project/editorconfig rules to match the intended formatting and commit that change."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "f3458758922a672dd3dc12c7": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter found code style/type issues (module-level import not at top; usage of typing.List and a function annotation) and exited with a non-zero status, causing the step to fail.",
+  "likely_cause": "The ruff linter found code style/type issues (module-level import not at top; usage of typing.List and a function annotation) and exited with a non-zero status, causing the step to fail.",
+  "evidence_verified": [
+   "E402 Module level import not at top of file",
+   "UP035 `typing.List` is deprecated, use `list` instead",
+   "Found 3 errors.",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Move the import statement to the top of src/click/utils.py so module-level imports are at file top.",
+   "Replace typing.List with built-in list in the import and annotations (or run a modernizer).",
+   "Update the function annotation def _names(x: List[str]) -> None: to def _names(x: list[str]) -> None:.",
+   "Re-run the linter with ruff --fix locally or in CI to auto-apply fixable changes, then re-run the pipeline."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c528ae6c9bc434f6b7a30822": {
+  "category": "unknown",
+  "confidence": "low",
+  "cause": "The test step was cancelled before completing; the logs show the operation was canceled but do not indicate why (timeout, manual cancel, or external orchestration).",
+  "likely_cause": "The test step was cancelled before completing; the logs show the operation was canceled but do not indicate why (timeout, manual cancel, or external orchestration).",
+  "evidence_verified": [
+   "##[error]The Operation will be canceled. The next steps may not contain expected logs.",
+   "##[error]The operation was canceled."
+  ],
+  "suggested_fixes": [
+   "Re-run the pipeline to see if cancellation was transient or reproducible.",
+   "Check the pipeline run history/notifications and any manual actions to determine if the run was manually canceled.",
+   "If you have a pipeline timeout or job cancellation policy, review and increase time limits or adjust cancellation rules.",
+   "Add logging or a timeout wrapper around `go test ./...` so long-running tests are visible and can be diagnosed (e.g., verbose test output, test-level timeouts)."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "4984dd6c9956fa4f2fdc1d3a": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "Maven failed to parse the project's POM file due to an unrecognised 'build' tag at line 26, column 10 (malformed/invalid pom.xml).",
+  "likely_cause": "Maven failed to parse the project's POM file due to an unrecognised 'build' tag at line 26, column 10 (malformed/invalid pom.xml).",
+  "evidence_verified": [
+   "[FATAL] Non-parseable POM /home/vsts/work/1/s/java/pom.xml: Unrecognised tag: 'build' (position: START_TAG seen ...</dependency>\\n\\n  <build>... @26:10)  @ line 26, column 10",
+   "[ERROR]   The project  (/home/vsts/work/1/s/java/pom.xml) has 1 error"
+  ],
+  "suggested_fixes": [
+   "Open /home/vsts/work/1/s/java/pom.xml and inspect around line 26 for malformed XML (missing/extra tags, incorrect nesting, or invalid characters).",
+   "Validate the POM against Maven's expected structure (ensure correct root <project> element, namespaces, and that tags are properly closed).",
+   "Run mvn -e and/or mvn -X locally or in CI to get full stack trace and more context if the problem is not obvious.",
+   "Fix the POM and re-run the pipeline; consider running mvn validate locally before committing to catch XML/POM errors early."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "f3940c532f3df89b5ba53ed3": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "Jest tried to run ES module import syntax but is not configured to treat files as ES modules or to transform them (SyntaxError: Cannot use import statement outside a module).",
+  "likely_cause": "Jest tried to run ES module import syntax but is not configured to treat files as ES modules or to transform them (SyntaxError: Cannot use import statement outside a module).",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/web/src/cart.test.js:1",
+   "({\"Object.<anonymous>\":function(module,exports,require,__dirname,__filename,jest){import { addItem, total, applyDiscount } from \"./cart\";",
+   "^^^^^^",
+   "SyntaxError: Cannot use import statement outside a module"
+  ],
+  "suggested_fixes": [
+   "Enable ESM support for Jest: set \"type\":\"module\" in package.json or configure Jest with extensionsToTreatAsEsm and/or transform using babel-jest.",
+   "Add a transformer (e.g. install and configure babel-jest) so import syntax is compiled before tests run.",
+   "Alternatively convert tests/modules to CommonJS (use require/module.exports) or configure Jest per https://jestjs.io/docs/ecmascript-modules.",
+   "If imports come from node_modules, adjust transformIgnorePatterns to allow transforming those packages."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "66a7ffba9d92e4af7dfebdd7": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "A Java syntax error in src/main/java/com/example/Cart.java caused Maven compilation to fail (';' expected at line 9).",
+  "likely_cause": "A Java syntax error in src/main/java/com/example/Cart.java caused Maven compilation to fail (';' expected at line 9).",
+  "evidence_verified": [
+   "[ERROR] /home/vsts/work/1/s/java/src/main/java/com/example/Cart.java:[9,20] ';' expected",
+   "[ERROR] BUILD FAILURE",
+   "[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.16.0:compile (default-compile) on project cart: Compilation failure"
+  ],
+  "suggested_fixes": [
+   "Open java/src/main/java/com/example/Cart.java and correct the syntax at line 9 (add the missing semicolon or fix the statement).",
+   "Run mvn -B -ntp test locally (or mvn -DskipTests=false test) to reproduce and verify the fix before pushing.",
+   "If you need more detail during troubleshooting, re-run the job (or locally) with Maven -e or -X to get full stack traces and debug output."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "075e8b26102efdbe5174b6cc": {
+  "category": "network",
+  "confidence": "high",
+  "cause": "The go install command failed because the configured Go proxy host (proxy.corp.invalid) could not be resolved (DNS lookup failed), preventing module download.",
+  "likely_cause": "The go install command failed because the configured Go proxy host (proxy.corp.invalid) could not be resolved (DNS lookup failed), preventing module download.",
+  "evidence_verified": [
+   "go install golang.org/x/tools/cmd/goimports@latest",
+   "go: golang.org/x/tools/cmd/goimports@latest: module golang.org/x/tools/cmd/goimports: Get \"https://proxy.corp.invalid/golang.org/x/tools/cmd/goimports/@v/list\": dial tcp: lookup proxy.corp.invalid on 127.0.0.53:53: no such host"
+  ],
+  "suggested_fixes": [
+   "Remove or correct the invalid GOPROXY setting (e.g. unset GOPROXY or set GOPROXY=https://proxy.golang.org).",
+   "If you require a corporate proxy, ensure the proxy hostname is reachable and DNS is correctly configured on the runner.",
+   "As a quick workaround, force direct module download: GOPROXY=direct go install ...",
+   "Verify CI environment variables and any workspace-specific env files that may be injecting proxy.corp.invalid before rerunning the pipeline."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "371d3d98ea05ba2fc89cf1cb": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test failed: the total() function returned NaN instead of the expected numeric total (13) for the given cart items, causing the test step to fail and the bash task to exit with code 1.",
+  "likely_cause": "A unit test failed: the total() function returned NaN instead of the expected numeric total (13) for the given cart items, causing the test step to fail and the bash task to exit with code 1.",
+  "evidence_verified": [
+   "Expected: 13",
+   "Received: NaN",
+   ">  9 |     expect(total([{ price: 5, qty: 2 }, { price: 1, qty: 3 }])).toBe(13);",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Inspect and fix the implementation of total() so it returns a numeric sum (sum of price * qty for each item).",
+   "Add input validation in total() to coerce/validate numeric price and qty and handle missing/invalid values to avoid NaN.",
+   "Run the test suite locally and add unit tests for edge cases (non-numeric values, missing fields) to prevent regressions."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "c45f067c48018fa22bf6c866": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The 'go vet' static analysis detected unreachable code in cart.go (./cart.go:25:2), causing the Vet step to fail with exit code 1.",
+  "likely_cause": "The 'go vet' static analysis detected unreachable code in cart.go (./cart.go:25:2), causing the Vet step to fail with exit code 1.",
+  "evidence_verified": [
+   "# example.com/cart",
+   "./cart.go:25:2: unreachable code",
+   "##[error]Bash exited with code '1'.",
+   "Script contents:",
+   "go vet ./..."
+  ],
+  "suggested_fixes": [
+   "Open cart.go and inspect the code at line 25; remove or correct the unreachable statement or control flow (e.g., fix misplaced return, break, or conditional).",
+   "Run `go vet ./...` locally to reproduce and iterate until vet reports no problems before committing.",
+   "Add a unit test or code review gate to catch similar unreachable-code regressions earlier."
+  ],
+  "verified": 5,
+  "quoted": 5
+ },
+ "55cec69f343b22ca9f8e56db": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "npm install failed because the package 'left-padd-internal@2.0.0' was not found in the configured registry (404 Not Found).",
+  "likely_cause": "npm install failed because the package 'left-padd-internal@2.0.0' was not found in the configured registry (404 Not Found).",
+  "evidence_verified": [
+   "npm error 404 Not Found - GET https://registry.npmjs.org/left-padd-internal - Not found",
+   "npm error 404  'left-padd-internal@2.0.0' is not in this registry."
+  ],
+  "suggested_fixes": [
+   "Verify package.json dependency spelling and version for 'left-padd-internal' and correct if mistyped.",
+   "If this is a private package, configure the pipeline to use the correct npm registry and authentication (e.g. .npmrc or npm login) before npm install.",
+   "Publish the missing package/version to the registry if it should exist there, or change the dependency to a published version or a git/url-based install.",
+   "As a temporary workaround, replace the dependency with an alternative or remove it if not required for the failing step."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "ff3189e055170f5821bdb892": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Docker build failed because curl was not available in the base image (python:3.12-slim), so the RUN curl ... command exited with code 127.",
+  "likely_cause": "The Docker build failed because curl was not available in the base image (python:3.12-slim), so the RUN curl ... command exited with code 127.",
+  "evidence_verified": [
+   "#10 0.158 /bin/sh: 1: curl: not found",
+   "#10 ERROR: process \"/bin/sh -c curl -fsSL https://example.com/setup.sh -o /tmp/setup.sh\" did not complete successfully: exit code: 127",
+   "Dockerfile:5",
+   "5 | >>> RUN curl -fsSL https://example.com/setup.sh -o /tmp/setup.sh"
+  ],
+  "suggested_fixes": [
+   "Add installation of curl in the Dockerfile before using it, e.g. run: apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*",
+   "Use a base image that already includes curl or use an alternative tool available in the image (e.g. wget or python) to fetch the script",
+   "If the script is small, copy it into the image via COPY instead of downloading during build to avoid relying on network at build time"
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ccbeb69a61c106b9b20cd087": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "Tests failed during collection because Python could not import the module 'xxhashh' (ModuleNotFoundError). The test import failed before any tests ran.",
+  "likely_cause": "Tests failed during collection because Python could not import the module 'xxhashh' (ModuleNotFoundError). The test import failed before any tests ran.",
+  "evidence_verified": [
+   "tests/test_hashing.py:1: in <module>",
+   "import xxhashh",
+   "E   ModuleNotFoundError: No module named 'xxhashh'"
+  ],
+  "suggested_fixes": [
+   "Ensure the required package is installed before running tests (e.g. add a pip install step for the dependency or run pip install -r requirements.txt).",
+   "Verify the import name is correct in tests/test_hashing.py (fix any typographical error in the module name).",
+   "Add dependency installation to the pipeline job (explicit pip install of the correct package or use a virtual environment with dependencies preinstalled)."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "07777687f398c2fbed9553c3": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The project targets .NET 99.0 but the installed .NET SDK (8.0.426) does not support that target, causing dotnet restore to fail with NETSDK1045.",
+  "likely_cause": "The project targets .NET 99.0 but the installed .NET SDK (8.0.426) does not support that target, causing dotnet restore to fail with NETSDK1045.",
+  "evidence_verified": [
+   "/opt/hostedtoolcache/dotnet/sdk/8.0.426/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(166,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 99.0.  Either target .NET 8.0 or lower, or use a version of the .NET SDK that supports .NET 99.0. Download the .NET SDK from https://aka.ms/dotnet/download [/home/vsts/work/1/s/dotnet/Cart/Cart.csproj]",
+   "dotnet restore Cart.Tests/Cart.Tests.csproj"
+  ],
+  "suggested_fixes": [
+   "Change the project's TargetFramework (in Cart.csproj or shared props) to a supported TFM such as net8.0 or lower.",
+   "Install or configure a .NET SDK that supports the intended target (if .NET 99.0 was intentional) and ensure the runner uses that SDK (or add a global.json to pin the SDK).",
+   "If 99.0 is a typo, correct the TargetFramework value to the intended version and re-run the pipeline."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "eae01f524d6443997fcabdc7": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test (CartTest.appliesADiscount) threw an IllegalStateException: \"price list not loaded\", causing the Maven build to fail during the surefire test phase. This indicates the test or its setup did not load the required price list/resource before asserting behavior.",
+  "likely_cause": "A unit test (CartTest.appliesADiscount) threw an IllegalStateException: \"price list not loaded\", causing the Maven build to fail during the surefire test phase. This indicates the test or its setup did not load the required price list/resource before asserting behavior.",
+  "evidence_verified": [
+   "[ERROR] com.example.CartTest.appliesADiscount -- Time elapsed: 0.063 s <<< ERROR!",
+   "java.lang.IllegalStateException: price list not loaded",
+   "[ERROR]   CartTest.appliesADiscount:16 IllegalState price list not loaded",
+   "[ERROR] Tests run: 2, Failures: 0, Errors: 1, Skipped: 0"
+  ],
+  "suggested_fixes": [
+   "Ensure the test initializes or mocks the price list before exercising Cart logic (e.g., add setup method that loads the price list).",
+   "If the price list is a resource file, add it to src/test/resources or adjust the test to load it from the correct path.",
+   "Add defensive checks or clearer test fixtures so missing resources produce a clear failure during local development; consider mocking external dependencies in the unit test.",
+   "Run the failing test locally (mvn -Dtest=CartTest test) with -e or -X if needed to get full stack traces to diagnose why the price list isn't loaded."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "34a65773785952fb367e74bb": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The Java compilation failed because the package org.acme.pricing could not be found \u2014 a missing dependency or missing source/module providing that package.",
+  "likely_cause": "The Java compilation failed because the package org.acme.pricing could not be found \u2014 a missing dependency or missing source/module providing that package.",
+  "evidence_verified": [
+   "[ERROR] /home/vsts/work/1/s/java/src/main/java/com/example/Cart.java:[4,24] package org.acme.pricing does not exist",
+   "[ERROR] BUILD FAILURE"
+  ],
+  "suggested_fixes": [
+   "Add or declare the dependency that provides org.acme.pricing in the project's pom.xml (with correct groupId/artifactId/version).",
+   "If the package is part of a local module, ensure that module is present and included in the build (check multi-module pom and source paths).",
+   "Verify the import/package path in Cart.java matches the actual package location in the dependency/source.",
+   "Re-run the build locally with mvn -X to get full debug output if the dependency is present but not being resolved."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "29f5c4e77626280d242a5aaf": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test threw System.InvalidOperationException: \"price list not loaded\" in CartTests.AppliesADiscount, causing the test step to fail.",
+  "likely_cause": "A unit test threw System.InvalidOperationException: \"price list not loaded\" in CartTests.AppliesADiscount, causing the test step to fail.",
+  "evidence_verified": [
+   "Error Message:",
+   "System.InvalidOperationException : price list not loaded",
+   "Failed CartTests.AppliesADiscount [2 ms]"
+  ],
+  "suggested_fixes": [
+   "Inspect CartTests.cs (line 15) to see why the price list isn't being loaded and add or fix the test setup to load the price list before the assertion.",
+   "If the test depends on external data, mock or inject a test price list so the test is hermetic.",
+   "Run the failing test locally (dotnet test Cart.Tests/Cart.Tests.csproj) to reproduce and iterate on a fix.",
+   "Add explicit initialization or fixture code to ensure the required resources are present for the test."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "48bac7d7acacaeedbbb4895f": {
+  "category": "dependency",
+  "confidence": "medium",
+  "cause": "dotnet restore failed because the NuGet source http://127.0.0.1:1/index.json could not be reached \u2014 the service index could not be loaded (NU1301).",
+  "likely_cause": "dotnet restore failed because the NuGet source http://127.0.0.1:1/index.json could not be reached \u2014 the service index could not be loaded (NU1301).",
+  "evidence_verified": [
+   "Script contents:",
+   "dotnet restore Cart.Tests/Cart.Tests.csproj --source http://127.0.0.1:1/index.json",
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1301: Unable to load the service index for source http://127.0.0.1:1/index.json."
+  ],
+  "suggested_fixes": [
+   "Fix the package source URL: point --source to a valid, reachable feed (prefer HTTPS) instead of http://127.0.0.1:1/index.json.",
+   "If a local feed was intended, ensure the feed/service is running and listening on the correct port and host before restore.",
+   "Remove or conditionally skip the local/invalid source in CI pipelines if it's not available on the runner.",
+   "Verify runner network access to the feed (firewall, routing) if the source is on a remote host."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "8eafa7b0965d3426ff6ee385": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Docker build failed because the Dockerfile attempts to COPY requirements.txt into the image but that file was not present in the build context (file not found).",
+  "likely_cause": "The Docker build failed because the Dockerfile attempts to COPY requirements.txt into the image but that file was not present in the build context (file not found).",
+  "evidence_verified": [
+   "#9 ERROR: failed to calculate checksum of ref 6134b6ae-8eb1-4f62-889e-a360c80bcfbf::n0rcrzt6edo3jzvim47kfokti: \"/requirements.txt\": not found",
+   "ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 6134b6ae-8eb1-4f62-889e-a360c80bcfbf::n0rcrzt6edo3jzvim47kfokti: \"/requirements.txt\": not found"
+  ],
+  "suggested_fixes": [
+   "Ensure requirements.txt is present at the repository root (or the Docker build context) before running docker build.",
+   "If requirements.txt is intentionally omitted, update the Dockerfile to remove or conditionalize the COPY and the subsequent pip install step.",
+   "Check .dockerignore to ensure it is not excluding requirements.txt from the build context.",
+   "Confirm the CI job's working directory / build context is the repository root (or pass the correct context path to docker build)."
+  ],
+  "verified": 2,
+  "quoted": 3
+ },
+ "09b31f903f44c4cea64495a9": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The release_lock.py script detected an existing deployment lock (\"deployment lock is held by build 1234\") and exited non\u2011zero, causing the step to fail.",
+  "likely_cause": "The release_lock.py script detected an existing deployment lock (\"deployment lock is held by build 1234\") and exited non\u2011zero, causing the step to fail.",
+  "evidence_verified": [
+   "Script contents:",
+   "python scripts/release_lock.py",
+   "deployment lock is held by build 1234",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Release or remove the existing deployment lock held by build 1234 before rerunning the pipeline.",
+   "If transient, add retry logic with backoff to the pipeline step so it waits and retries when the lock is present.",
+   "If the lock is expected for some runs, update the pipeline to allow skipping the lock check or to run in a different deployment slot.",
+   "Ensure the lock-management logic in scripts/release_lock.py returns a distinct exit code and message for easier automation handling."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "ce5126dd07335205d1589fbf": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "Maven failed dependency resolution: the artifact org.junit.jupiter:junit-jupiter-extras:jar:5.10.2 could not be found in the configured central repository.",
+  "likely_cause": "Maven failed dependency resolution: the artifact org.junit.jupiter:junit-jupiter-extras:jar:5.10.2 could not be found in the configured central repository.",
+  "evidence_verified": [
+   "[WARNING] The POM for org.junit.jupiter:junit-jupiter-extras:jar:5.10.2 is missing, no dependency information available",
+   "[ERROR] dependency: org.junit.jupiter:junit-jupiter-extras:jar:5.10.2 (test)",
+   "[ERROR] \tCould not find artifact org.junit.jupiter:junit-jupiter-extras:jar:5.10.2 in central (https://repo.maven.apache.org/maven2)"
+  ],
+  "suggested_fixes": [
+   "Verify the dependency coordinates in your pom.xml: ensure groupId/artifactId/version are correct and that this artifact actually exists for version 5.10.2.",
+   "If the artifact is not published to Maven Central, add the repository that hosts it to your pom.xml/settings.xml or use a version that is available on Central.",
+   "If the dependency was added accidentally, remove or replace it (for JUnit 5 you likely only need junit-jupiter-api/junit-jupiter-engine).",
+   "Re-run the build with mvn -U to force update of metadata, and with -X/-e locally to get full diagnostics if the problem persists."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "22bf36b0c36919bc1b2337a8": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test assertion failed: the test expected a discounted amount of 20 for inputs amount=50 and percent=50, but the calculation in code/test produced 25 (50 - (50*50//100) == 25).",
+  "likely_cause": "A unit test assertion failed: the test expected a discounted amount of 20 for inputs amount=50 and percent=50, but the calculation in code/test produced 25 (50 - (50*50//100) == 25).",
+  "evidence_verified": [
+   "___________________________ test_discount[50-50-20] ____________________________",
+   "tests/test_discounts.py:6: in test_discount",
+   "assert amount - amount * percent // 100 == expected",
+   "E   assert (50 - ((50 * 50) // 100)) == 20"
+  ],
+  "suggested_fixes": [
+   "If the intended discount is 50% of 50, update the test expected value to 25 (fix the test expectation).",
+   "If the business rule expects a different rounding/behavior (e.g., always round down to 20 or use floats), update the calculation to match that rule and add a clarifying comment and tests.",
+   "Add a targeted unit test that documents the expected behavior for percentage calculations (including rounding), then adjust either the implementation or tests to match the documented behavior."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "99d9bba1d44540a76c8976b7": {
+  "category": "dependency",
+  "confidence": "high",
+  "cause": "The test project requires Microsoft.NET.Test.Sdk version >= 99.0.0, but nuget.org only has versions up to 18.11.0, so the package cannot be found.",
+  "likely_cause": "The test project requires Microsoft.NET.Test.Sdk version >= 99.0.0, but nuget.org only has versions up to 18.11.0, so the package cannot be found.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1102: Unable to find package Microsoft.NET.Test.Sdk with version (>= 99.0.0)",
+   "/home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj : error NU1102:   - Found 182 version(s) in nuget.org [ Nearest version: 18.11.0 ]",
+   "Failed to restore /home/vsts/work/1/s/dotnet/Cart.Tests/Cart.Tests.csproj (in 2.74 sec).",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Update the Cart.Tests.csproj to reference an existing Microsoft.NET.Test.Sdk version (for example 18.11.0) or use a compatible version range.",
+   "If 99.0.0 is from a private feed, add/configure that NuGet feed in the pipeline (nuget.config or pipeline service connection) so the package can be resolved.",
+   "Verify package version constraints in project files or central package management to avoid requesting non-existent major versions."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "3055d092db77e93156f80d03": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A Go unit test triggered a runtime panic: an index out of range in example.com/cart.Total (cart.go:13) when running TestTotal. The test attempted to access slice index 2 while the slice length was 2, causing the panic and test failure.",
+  "likely_cause": "A Go unit test triggered a runtime panic: an index out of range in example.com/cart.Total (cart.go:13) when running TestTotal. The test attempted to access slice index 2 while the slice length was 2, causing the panic and test failure.",
+  "evidence_verified": [
+   "panic: runtime error: index out of range [2] with length 2",
+   "example.com/cart.Total(...)\n/home/vsts/work/1/s/go/cart.go:13",
+   "example.com/cart.TestTotal(0xc0000ac4e0?)\n/home/vsts/work/1/s/go/cart_test.go:6 +0xd8",
+   "FAIL\texample.com/cart\t0.005s"
+  ],
+  "suggested_fixes": [
+   "Inspect cart.Total (cart.go line 13) and add proper bounds checking before indexing slices.",
+   "Adjust TestTotal (cart_test.go) to supply inputs with sufficient length or to test behavior for shorter slices.",
+   "Add unit tests for edge cases (empty or short slices) and consider defensive programming (len checks or safe iteration)."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "0a9514612c01b41c23957866": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "The Python script raised a RuntimeError indicating the tenant 'acme' has exceeded its quota, causing the step to fail.",
+  "likely_cause": "The Python script raised a RuntimeError indicating the tenant 'acme' has exceeded its quota, causing the step to fail.",
+  "evidence_verified": [
+   "File \"/home/vsts/work/1/s/scripts/quota.py\", line 1, in <module>",
+   "raise RuntimeError(\"quota exceeded for tenant acme\")",
+   "RuntimeError: quota exceeded for tenant acme",
+   "##[error]Bash exited with code '1'. "
+  ],
+  "suggested_fixes": [
+   "Increase the quota for tenant 'acme' or free up resources so the quota check passes.",
+   "Modify scripts/quota.py to handle quota-exceeded situations gracefully (return non-fatal status or provide remediation steps) if that is expected during runs.",
+   "Add a preparatory step in the pipeline to ensure the tenant has sufficient quota (or use a dedicated test tenant) before running this check.",
+   "If this failure is intermittent, add retry logic around the quota check or gate the pipeline on an explicit manual approval when quota limits are hit."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "a160dfcfffcc90daec3959b5": {
+  "category": "configuration",
+  "confidence": "medium",
+  "cause": "The Go command attempted to fetch modules via http://127.0.0.1:1 (connection refused). This indicates an environment configuration (e.g. GOPROXY or an HTTP proxy) is pointing at localhost port 1, causing module download to fail.",
+  "likely_cause": "The Go command attempted to fetch modules via http://127.0.0.1:1 (connection refused). This indicates an environment configuration (e.g. GOPROXY or an HTTP proxy) is pointing at localhost port 1, causing module download to fail.",
+  "evidence_verified": [
+   "Script contents:",
+   "go mod download golang.org/x/text@v0.14.0",
+   "go: golang.org/x/text@v0.14.0: Get \"http://127.0.0.1:1/golang.org/x/text/@v/v0.14.0.info\": dial tcp 127.0.0.1:1: connect: connection refused",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Check environment variables (GOPROXY, HTTP_PROXY, HTTPS_PROXY) on the runner and remove or correct any entry pointing to http://127.0.0.1:1.",
+   "Set GOPROXY to a valid proxy or the default, e.g. GOPROXY=https://proxy.golang.org,direct, and retry.",
+   "If a local proxy is intended, ensure that service is running and listening on the configured port, or update the proxy address to the correct host:port.",
+   "Add a pipeline step to print relevant env vars (GOPROXY, HTTP_PROXY, HTTPS_PROXY) for future debugging, and fail fast if they are invalid."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "842007c6e31e38c2adb60a16": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The Go build failed due to a type mismatch in cart.go: a string constant \"discounted\" is being returned where an int is expected.",
+  "likely_cause": "The Go build failed due to a type mismatch in cart.go: a string constant \"discounted\" is being returned where an int is expected.",
+  "evidence_verified": [
+   "./cart.go:20:9: cannot use \"discounted\" (untyped string constant) as int value in return statement",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Edit cart.go to return the correct type: either change the returned value to an int or change the function's return type to string.",
+   "If the function should return numeric codes, replace \"discounted\" with the appropriate integer constant or map the string to an int before returning.",
+   "Run go build locally after making the change to verify the compile error is resolved before re-running the pipeline."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "21522635dccadc4ff8f5c007": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "mypy type-check failure: code passes a str where an int is expected (calling _twice(\"3\") but _twice expects an int).",
+  "likely_cause": "mypy type-check failure: code passes a str where an int is expected (calling _twice(\"3\") but _twice expects an int).",
+  "evidence_verified": [
+   "src/click/utils.py:683: error: Argument 1 to \"_twice\" has incompatible type",
+   "\"str\"; expected \"int\"  [arg-type]",
+   "_RESULT = _twice(\"3\")"
+  ],
+  "suggested_fixes": [
+   "Pass an int rather than a string, e.g. change _twice(\"3\") to _twice(3) where appropriate.",
+   "If the value is received as text, convert it before calling: _twice(int(\"3\")) or int(variable).",
+   "Alternatively, update the _twice function's type signature to accept str if that is the intended usage."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "b1c2dacce39765ec555fe876": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "ESLint failed the Lint step because it detected a duplicate object key named 'addItem' in src/web/src/cart.js, causing the lint command to exit with code 1.",
+  "likely_cause": "ESLint failed the Lint step because it detected a duplicate object key named 'addItem' in src/web/src/cart.js, causing the lint command to exit with code 1.",
+  "evidence_verified": [
+   "/home/vsts/work/1/s/web/src/cart.js",
+   "15:51  error  Duplicate key 'addItem'  no-dupe-keys",
+   "\u2716 1 problem (1 error, 0 warnings)",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Open src/web/src/cart.js and remove or rename the duplicate 'addItem' key so the object has unique property names.",
+   "If both implementations are needed, merge their logic into a single addItem function or move one implementation to a different property/module.",
+   "Run npx eslint src locally and fix any further lint errors before pushing to the repository.",
+   "Optionally, adjust the lint rule configuration only if the duplicate key is intentional and justified (not recommended)."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "1288025984e92e4821263cb7": {
+  "category": "configuration",
+  "confidence": "high",
+  "cause": "Maven's compiler plugin was invoked with an unsupported Java source release (invalid source release: 99), so the JDK on the runner does not accept '99' as a valid source version \u2014 a Java toolchain / sourceCompatibility mismatch.",
+  "likely_cause": "Maven's compiler plugin was invoked with an unsupported Java source release (invalid source release: 99), so the JDK on the runner does not accept '99' as a valid source version \u2014 a Java toolchain / sourceCompatibility mismatch.",
+  "evidence_verified": [
+   "[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.16.0:compile (default-compile) on project cart: Fatal error compiling: error: invalid source release: 99 -> [Help 1]"
+  ],
+  "suggested_fixes": [
+   "Ensure the runner has a JDK that supports the configured source release, or change the project/sourceCompatibility to a supported version (e.g., 17) in pom.xml.",
+   "Configure Maven toolchains or set MAVEN_OPTS / JAVA_HOME so mvn uses the intended JDK on the runner.",
+   "If the project intentionally targets a newer/older Java, update the maven-compiler-plugin <source>/<target> values to match an available JDK on the runner."
+  ],
+  "verified": 1,
+  "quoted": 1
+ },
+ "3dce5e394a20d8872a732aa2": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The Go build failed because the source file imports the package \"strings\" but does not use it, causing the compiler to error out.",
+  "likely_cause": "The Go build failed because the source file imports the package \"strings\" but does not use it, causing the compiler to error out.",
+  "evidence_verified": [
+   "./cart.go:3:8: \"strings\" imported and not used",
+   "##[error]Bash exited with code '1'.",
+   "Script contents:",
+   "go build ./..."
+  ],
+  "suggested_fixes": [
+   "Edit cart.go to remove the unused import of \"strings\" or use the package in the code (e.g., call a function from strings).",
+   "Run go build (or go vet) locally before pushing to catch compile errors early.",
+   "Add a pre-commit or CI lint/build step that runs go build ./... so unused imports are detected earlier."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "cbb662374006a21220e09e7e": {
+  "category": "code-error",
+  "confidence": "high",
+  "cause": "The Go build failed due to a compile-time error: a function in cart.go is missing a return statement (./cart.go:15:1: missing return).",
+  "likely_cause": "The Go build failed due to a compile-time error: a function in cart.go is missing a return statement (./cart.go:15:1: missing return).",
+  "evidence_verified": [
+   "./cart.go:15:1: missing return",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Open cart.go and correct the function at or around line 15 to ensure all code paths return the declared value(s).",
+   "Run `go build ./...` locally to reproduce and verify the fix before pushing.",
+   "Add a pre-build lint/vet step (e.g., `go vet`, `golangci-lint run`) to catch similar compile issues earlier in CI."
+  ],
+  "verified": 2,
+  "quoted": 2
+ },
+ "0d93549e2ecb0e9f30da09c6": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A unit test assertion failed: CartTest.totalsTheCart expected total 14 but actual was 13, causing Maven surefire to fail the build.",
+  "likely_cause": "A unit test assertion failed: CartTest.totalsTheCart expected total 14 but actual was 13, causing Maven surefire to fail the build.",
+  "evidence_verified": [
+   "[ERROR] com.example.CartTest.totalsTheCart -- Time elapsed: 0.010 s <<< FAILURE!",
+   "org.opentest4j.AssertionFailedError: expected: <14> but was: <13>",
+   "[ERROR]   CartTest.totalsTheCart:11 expected: <14> but was: <13>",
+   "[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0"
+  ],
+  "suggested_fixes": [
+   "Inspect com.example.CartTest.totalsTheCart (line 11) and correct either the test expectation or the application logic so the computed total matches the expected value.",
+   "Run the failing test locally (mvn -Dtest=CartTest test) and examine target/surefire-reports for detailed output and inputs used by the test.",
+   "If the test is flaky due to timing or environment, make it deterministic (use fixed data, mocks) or adjust assertions to tolerate expected variability.",
+   "If the intended behavior changed, update the expected value in the test and add a comment explaining the reason."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "95046c431783766e3468ab95": {
+  "category": "static-analysis",
+  "confidence": "high",
+  "cause": "The ruff linter found a style error (E711: comparison to None using '==') in src/click/utils.py causing the command to exit with code 1 and fail the step.",
+  "likely_cause": "The ruff linter found a style error (E711: comparison to None using '==') in src/click/utils.py causing the command to exit with code 1 and fail the step.",
+  "evidence_verified": [
+   "E711 Comparison to `None` should be `cond is None`",
+   "--> src/click/utils.py:680:21",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Change the comparison at src/click/utils.py:680 from `value == None` to `value is None` and commit the fix.",
+   "Alternatively, enable automatic fixes or unsafe fixes in the CI step (e.g. run ruff with --fix or --unsafe-fixes) if you want the pipeline to auto-correct this rule.",
+   "If the lint should not fail the pipeline for this rule, adjust the ruff configuration or the pipeline command to ignore E711 or run ruff with a non-error return for selected checks."
+  ],
+  "verified": 3,
+  "quoted": 3
+ },
+ "54f9cb750c6573dc01e47aa3": {
+  "category": "code-error",
+  "confidence": "medium",
+  "cause": "The C# compilation failed because the type or namespace 'Money' could not be resolved (missing using, project reference, or NuGet package). The build was invoked with --no-restore, so package/project references may not have been restored or included before building.",
+  "likely_cause": "The C# compilation failed because the type or namespace 'Money' could not be resolved (missing using, project reference, or NuGet package). The build was invoked with --no-restore, so package/project references may not have been restored or included before building.",
+  "evidence_verified": [
+   "Script contents:",
+   "dotnet build Cart.Tests/Cart.Tests.csproj --no-restore",
+   "/home/vsts/work/1/s/dotnet/Cart/Cart.cs(5,30): error CS0246: The type or namespace name 'Money' could not be found (are you missing a using directive or an assembly reference?) [/home/vsts/work/1/s/dotnet/Cart/Cart.csproj]",
+   "##[error]Bash exited with code '1'."
+  ],
+  "suggested_fixes": [
+   "Restore NuGet packages before building (run dotnet restore or remove --no-restore from the build step).",
+   "Ensure the project that defines 'Money' is referenced by the Cart project (add a project reference or package reference).",
+   "Add the correct using directive or correct the type name if it is misspelled.",
+   "Verify the repo includes the library/source that defines 'Money' and that it is part of the solution being built."
+  ],
+  "verified": 4,
+  "quoted": 4
+ },
+ "8c6f2d29aaaeeacafb6fdd72": {
+  "category": "test-failure",
+  "confidence": "high",
+  "cause": "A JavaScript ReferenceError in src/cart.js: applyDiscount references an undefined variable 'rate' instead of the function parameter (percent), causing the test to fail.",
+  "likely_cause": "A JavaScript ReferenceError in src/cart.js: applyDiscount references an undefined variable 'rate' instead of the function parameter (percent), causing the test to fail.",
+  "evidence_verified": [
+   "ReferenceError: rate is not defined",
+   "  return Math.round(amount * (1 - rate / 100) * 100) / 100;",
+   "at rate (src/cart.js:12:35)",
+   "at Object.applyDiscount (src/cart.test.js:13:12)"
+  ],
+  "suggested_fixes": [
+   "Edit src/cart.js and replace 'rate' with the correct parameter name (percent) or define rate before use, e.g. return Math.round(amount * (1 - percent / 100) * 100) / 100;",
+   "Run the test suite locally (npx jest) to verify the fix before committing.",
+   "Add a unit test or lint rule to catch use of undefined variables in future."
+  ],
+  "verified": 4,
+  "quoted": 4
+ }
+}

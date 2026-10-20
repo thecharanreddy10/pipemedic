@@ -1,0 +1,9 @@
+requests==2.32.3
+pytest==8.3.3
+streamlit
+pandas
+azure-identity
+azure-data-tables
+azure-communication-email
+# optional: plain-language explanation through the Anthropic API
+anthropic

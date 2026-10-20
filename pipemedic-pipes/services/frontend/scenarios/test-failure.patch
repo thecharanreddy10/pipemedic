@@ -1,0 +1,12 @@
+diff --git a/services/frontend/app/main.py b/services/frontend/app/main.py
+index 9e6363e..7df644d 100644
+--- a/services/frontend/app/main.py
++++ b/services/frontend/app/main.py
+@@ -24,4 +24,4 @@ def catalog():
+ 
+ @app.get("/", response_class=HTMLResponse)
+ def home():
+-    return "<h1>PipeMedic Shop</h1><p>Browse the catalog at <a href='/api/catalog'>/api/catalog</a>.</p>"
+\ No newline at end of file
++    return "<h1>PipeMedic Store</h1><p>Browse the catalog at <a href='/api/catalog'>/api/catalog</a>.</p>"
+\ No newline at end of file

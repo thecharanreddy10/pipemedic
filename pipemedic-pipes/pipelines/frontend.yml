@@ -1,0 +1,44 @@
+# frontend service: lint, test, benchmark, package, deploy to a runner, smoke test.
+# Run it by hand and pick a scenario to see how PipeMedic explains each kind of failure.
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - services/frontend
+      - pipelines
+
+pr:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - services/frontend
+      - pipelines
+
+parameters:
+  - name: scenario
+    displayName: Failure scenario (demo)
+    type: string
+    default: none
+    values:
+      - none
+      - test-failure
+      - lint-error
+      - dependency-missing
+      - missing-config
+      - network-timeout
+      - flaky-test
+      - permission-denied
+      - memory-hog
+      - cpu-starvation
+      - disk-full
+
+stages:
+  - template: templates/service-ci.yml
+    parameters:
+      service: frontend
+      port: 8001
+      scenario: ${{ parameters.scenario }}

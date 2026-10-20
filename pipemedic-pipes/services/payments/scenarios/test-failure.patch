@@ -1,0 +1,13 @@
+diff --git a/services/payments/app/main.py b/services/payments/app/main.py
+index 6136cc8..53532dd 100644
+--- a/services/payments/app/main.py
++++ b/services/payments/app/main.py
+@@ -12,7 +12,7 @@ def health():
+ 
+ @app.post("/pay")
+ def pay(order_id: str, amount: float):
+-    if amount <= 0:
++    if amount < 0:
+         raise HTTPException(400, "amount must be positive")
+     return {
+         "order_id": order_id,

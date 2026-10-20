@@ -1,0 +1,418 @@
+{
+ "b001": {
+  "label": "dependency",
+  "subtype": "missing-package",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b002": {
+  "label": "permissions",
+  "subtype": "no-execute-bit",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-package",
+  "split": "holdout"
+ },
+ "b003": {
+  "label": "lint",
+  "subtype": "unused-import",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b004": {
+  "label": "permissions",
+  "subtype": "repository-permission",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-package",
+  "split": "dev"
+ },
+ "b005": {
+  "label": "lint",
+  "subtype": "formatting",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b006": {
+  "label": "timeout",
+  "subtype": "waiting-for-service",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b007": {
+  "label": "config",
+  "subtype": "wrong-module-name",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-package",
+  "split": "holdout"
+ },
+ "b008": {
+  "label": "timeout",
+  "subtype": "blocked-wait",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b009": {
+  "label": "code-error",
+  "subtype": "name-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b010": {
+  "label": "type-error",
+  "subtype": "wrong-argument-type",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "dev"
+ },
+ "b011": {
+  "label": "config",
+  "subtype": "wrong-path",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b012": {
+  "label": "test-failure",
+  "subtype": "inverted-condition",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b013": {
+  "label": "dependency",
+  "subtype": "nonexistent-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b014": {
+  "label": "test-failure",
+  "subtype": "off-by-one",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b015": {
+  "label": "config",
+  "subtype": "wrong-working-directory",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b016": {
+  "label": "test-failure",
+  "subtype": "inverted-condition",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b017": {
+  "label": "permissions",
+  "subtype": "file-permission",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b018": {
+  "label": "config",
+  "subtype": "missing-file",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-package",
+  "split": "dev"
+ },
+ "b019": {
+  "label": "test-failure",
+  "subtype": "exit-code",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b020": {
+  "label": "lint",
+  "subtype": "undefined-name",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "holdout"
+ },
+ "b021": {
+  "label": "type-error",
+  "subtype": "missing-return",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "holdout"
+ },
+ "b022": {
+  "label": "lint",
+  "subtype": "mutable-default",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "holdout"
+ },
+ "b023": {
+  "label": "code-error",
+  "subtype": "syntax-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b024": {
+  "label": "type-error",
+  "subtype": "missing-annotation",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "dev"
+ },
+ "b025": {
+  "label": "test-failure",
+  "subtype": "wrong-default",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b026": {
+  "label": "permissions",
+  "subtype": "feed-access",
+  "ambiguous": true,
+  "note": "feed not found vs not authorised",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b027": {
+  "label": "network",
+  "subtype": "refused-proxy",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b028": {
+  "label": "lint",
+  "subtype": "bare-except",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b029": {
+  "label": "timeout",
+  "subtype": "lock-never-released",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b030": {
+  "label": "network",
+  "subtype": "test-needs-network",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b031": {
+  "label": "test-failure",
+  "subtype": "wrong-value",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b032": {
+  "label": "code-error",
+  "subtype": "circular-import",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b033": {
+  "label": "test-failure",
+  "subtype": "inverted-condition",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b034": {
+  "label": "dependency",
+  "subtype": "python-version-constraint",
+  "ambiguous": true,
+  "note": "could also be read as a packaging/config error",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b035": {
+  "label": "code-error",
+  "subtype": "bad-import-name",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b036": {
+  "label": "config",
+  "subtype": "invalid-toml",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b037": {
+  "label": "code-error",
+  "subtype": "indentation-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b038": {
+  "label": "dependency",
+  "subtype": "nonexistent-package",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b039": {
+  "label": "type-error",
+  "subtype": "wrong-return-type",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "dev"
+ },
+ "b040": {
+  "label": "network",
+  "subtype": "unreachable-index",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b041": {
+  "label": "network",
+  "subtype": "unreachable-host",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b042": {
+  "label": "type-error",
+  "subtype": "optional-misuse",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "dev"
+ },
+ "b043": {
+  "label": "test-failure",
+  "subtype": "off-by-one",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b044": {
+  "label": "dependency",
+  "subtype": "undeclared-dependency",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b045": {
+  "label": "test-failure",
+  "subtype": "wrong-constant",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b046": {
+  "label": "lint",
+  "subtype": "formatting",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b047": {
+  "label": "lint",
+  "subtype": "line-too-long",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b048": {
+  "label": "lint",
+  "subtype": "unused-variable",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "dev"
+ },
+ "b049": {
+  "label": "test-failure",
+  "subtype": "logic",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b050": {
+  "label": "permissions",
+  "subtype": "protected-directory",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "dev"
+ },
+ "b051": {
+  "label": "dependency",
+  "subtype": "conflicting-pins",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "holdout"
+ },
+ "b052": {
+  "label": "config",
+  "subtype": "missing-file",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-package",
+  "split": "dev"
+ }
+}

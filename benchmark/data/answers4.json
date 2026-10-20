@@ -1,0 +1,218 @@
+{
+ "e001": {
+  "label": "lint",
+  "subtype": "go-vet-unreachable",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e002": {
+  "label": "dependency",
+  "subtype": "npm-missing-package",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round4"
+ },
+ "e003": {
+  "label": "config",
+  "subtype": "docker-missing-tool",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round4"
+ },
+ "e004": {
+  "label": "dependency",
+  "subtype": "pytest-collection-missing-module",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round4"
+ },
+ "e005": {
+  "label": "config",
+  "subtype": "dotnet-invalid-framework",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round4"
+ },
+ "e006": {
+  "label": "test-failure",
+  "subtype": "junit-thrown-exception",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round4"
+ },
+ "e007": {
+  "label": "code-error",
+  "subtype": "java-missing-package",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round4"
+ },
+ "e008": {
+  "label": "test-failure",
+  "subtype": "xunit-thrown-exception",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round4"
+ },
+ "e009": {
+  "label": "network",
+  "subtype": "nuget-refused-source",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round4"
+ },
+ "e010": {
+  "label": "config",
+  "subtype": "docker-missing-requirements",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-container",
+  "split": "round4"
+ },
+ "e011": {
+  "label": "other",
+  "subtype": "custom-exit-message",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round4"
+ },
+ "e012": {
+  "label": "dependency",
+  "subtype": "maven-wrong-artifact",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round4"
+ },
+ "e013": {
+  "label": "test-failure",
+  "subtype": "pytest-parametrized-failure",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round4"
+ },
+ "e014": {
+  "label": "dependency",
+  "subtype": "nuget-missing-sdk-version",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round4"
+ },
+ "e015": {
+  "label": "test-failure",
+  "subtype": "go-test-panic",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e016": {
+  "label": "other",
+  "subtype": "custom-exception",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-tests",
+  "split": "round4"
+ },
+ "e017": {
+  "label": "network",
+  "subtype": "go-refused-proxy",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e018": {
+  "label": "code-error",
+  "subtype": "go-type-mismatch",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e019": {
+  "label": "type-error",
+  "subtype": "mypy-arg-type",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-typecheck",
+  "split": "round4"
+ },
+ "e020": {
+  "label": "lint",
+  "subtype": "eslint-duplicate-key",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round4"
+ },
+ "e021": {
+  "label": "config",
+  "subtype": "maven-invalid-release",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round4"
+ },
+ "e022": {
+  "label": "code-error",
+  "subtype": "go-unused-import",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e023": {
+  "label": "code-error",
+  "subtype": "go-missing-return",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-go",
+  "split": "round4"
+ },
+ "e024": {
+  "label": "test-failure",
+  "subtype": "junit-wrong-expectation",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-java",
+  "split": "round4"
+ },
+ "e025": {
+  "label": "lint",
+  "subtype": "ruff-none-comparison",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-lint",
+  "split": "round4"
+ },
+ "e026": {
+  "label": "code-error",
+  "subtype": "csharp-missing-type",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-dotnet",
+  "split": "round4"
+ },
+ "e027": {
+  "label": "test-failure",
+  "subtype": "jest-reference-error",
+  "ambiguous": false,
+  "note": "",
+  "pipeline": "click-web",
+  "split": "round4"
+ }
+}

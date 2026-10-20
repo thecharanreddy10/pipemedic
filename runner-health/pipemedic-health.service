@@ -1,0 +1,6 @@
+[Unit]
+Description=PipeMedic runner health report
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/report_health.sh

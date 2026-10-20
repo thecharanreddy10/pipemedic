@@ -1,0 +1,159 @@
+# One service's pipeline: lint and test, package, deploy to the runner, smoke test.
+# Everything runs on pipemedic-pool. The scenario parameter injects one failure inside the step that would really fail.
+parameters:
+  - name: service
+    type: string
+  - name: port
+    type: number
+  - name: scenario
+    type: string
+    default: none
+
+stages:
+  - stage: Validate
+    displayName: Lint and test
+    jobs:
+      - job: Check
+        displayName: Lint, test and benchmark
+        timeoutInMinutes: 20
+        pool:
+          name: pipemedic-pool
+        variables:
+          SCENARIO: ${{ parameters.scenario }}
+        steps:
+          - checkout: self
+            displayName: Get the code
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" network ${{ parameters.service }}
+              url="${UPSTREAM_URL:-https://pypi.org/simple/fastapi/}"
+              echo "Checking the package index is reachable: $url"
+              curl --fail --silent --show-error --max-time 8 -o /dev/null "$url"
+              echo "Package index reachable"
+            displayName: Check network access
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" install ${{ parameters.service }}
+              python3 -m venv .venv
+              . .venv/bin/activate
+              pip install --disable-pip-version-check -r requirements.txt -r requirements-dev.txt
+            displayName: Install dependencies
+            workingDirectory: services/${{ parameters.service }}
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" lint ${{ parameters.service }}
+              . .venv/bin/activate
+              ruff check .
+            displayName: Lint
+            workingDirectory: services/${{ parameters.service }}
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" test ${{ parameters.service }}
+              . .venv/bin/activate
+              python -m pytest --junitxml="$BUILD_ARTIFACTSTAGINGDIRECTORY/junit-${{ parameters.service }}.xml"
+            displayName: Unit tests
+            workingDirectory: services/${{ parameters.service }}
+
+          - task: PublishTestResults@2
+            displayName: Publish test results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: $(Build.ArtifactStagingDirectory)/junit-*.xml
+              testRunTitle: ${{ parameters.service }}
+              failTaskOnFailedTests: false
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" benchmark ${{ parameters.service }}
+              . .venv/bin/activate
+              # The benchmark gets a memory budget so it can never starve the agent that is running it.
+              sudo -n systemd-run --scope --quiet --uid="$(id -u)" -p MemoryMax=600M -p MemorySwapMax=0 \
+                env BENCH_MEM_MB="${BENCH_MEM_MB:-40}" BENCH_REQUESTS="${BENCH_REQUESTS:-3000}" "$VIRTUAL_ENV/bin/python" "$BUILD_SOURCESDIRECTORY/pipelines/scripts/benchmark.py"
+            displayName: Benchmark
+            timeoutInMinutes: 1
+            workingDirectory: services/${{ parameters.service }}
+
+          - bash: bash "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/cleanup.sh"
+            displayName: Clean up the runner
+            condition: always()
+
+  - stage: Package
+    displayName: Package
+    dependsOn: Validate
+    jobs:
+      - job: Build
+        displayName: Build the package
+        pool:
+          name: pipemedic-pool
+        variables:
+          SCENARIO: ${{ parameters.scenario }}
+        steps:
+          - checkout: self
+            displayName: Get the code
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" package ${{ parameters.service }}
+              bash "$BUILD_SOURCESDIRECTORY/pipelines/scripts/validate_config.sh" config/${{ parameters.service }}.prod.json
+            displayName: Validate deployment config
+            workingDirectory: services/${{ parameters.service }}
+
+          - bash: |
+              set -euo pipefail
+              mkdir -p "$BUILD_ARTIFACTSTAGINGDIRECTORY/package"
+              tar czf "$BUILD_ARTIFACTSTAGINGDIRECTORY/package/${{ parameters.service }}.tgz" app config requirements.txt
+              echo "Packaged $(du -h "$BUILD_ARTIFACTSTAGINGDIRECTORY/package/${{ parameters.service }}.tgz" | cut -f1)"
+            displayName: Build the package
+            workingDirectory: services/${{ parameters.service }}
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish the package
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/package
+              artifact: package
+
+  - stage: Deploy
+    displayName: Deploy to the runner
+    dependsOn: Package
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: Deploy
+        displayName: Deploy and smoke test
+        pool:
+          name: pipemedic-pool
+        variables:
+          SCENARIO: ${{ parameters.scenario }}
+        steps:
+          - checkout: self
+            displayName: Get the code
+
+          - download: current
+            artifact: package
+            displayName: Download the package
+
+          - bash: |
+              set -euo pipefail
+              source "$BUILD_SOURCESDIRECTORY/pipelines/scenarios/hooks.sh" deploy ${{ parameters.service }}
+              bash "$BUILD_SOURCESDIRECTORY/pipelines/scripts/deploy.sh" ${{ parameters.service }} ${{ parameters.port }} "$PIPELINE_WORKSPACE/package/${{ parameters.service }}.tgz"
+            displayName: Deploy to this runner
+
+          - bash: |
+              set -euo pipefail
+              url="http://127.0.0.1:${{ parameters.port }}/health"
+              for attempt in 1 2 3 4 5 6 7 8 9 10; do
+                if body=$(curl --fail --silent --max-time 3 "$url"); then
+                  echo "Smoke test passed on attempt $attempt: $body"
+                  exit 0
+                fi
+                echo "Attempt $attempt: $url not answering yet"
+                sleep 2
+              done
+              echo "ERROR: ${{ parameters.service }} did not answer on $url" >&2
+              sudo -n journalctl -u pipemedic-${{ parameters.service }} --no-pager -n 15 || true
+              exit 1
+            displayName: Smoke test

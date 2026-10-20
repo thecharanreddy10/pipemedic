@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.zip
+*.jpeg
+.claude/
+agent/remediation_log.jsonl
+*.docx
+infra/setup.env
+.ruff_cache/
+health-api/version.txt
+agent/local.env

@@ -1,0 +1,5 @@
+{
+  "service": "inventory",
+  "port": 8003,
+  "log_level": "info"
+}
