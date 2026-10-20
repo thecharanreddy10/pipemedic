@@ -25,9 +25,11 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 import config
+import fixplan
 import memory
 import pool_alerts
 import remediate
+import runner_actions
 from ai_diagnose import ai_diagnose
 from ai_fix import check_fix_verifications, open_fix_pr
 from diagnose import apply_ai, diagnose, summarize_health
@@ -47,7 +49,7 @@ STALE_AFTER_MIN = 15  # a claimed run that has not moved for this long was stopp
 STALL_AFTER_S = 90    # an investigation still running after this long gets a note saying where it is
 HEARTBEAT_S = 10      # how often a running investigation records that its worker is alive
 WATCHED_FILES = {"watcher.py", "runner_logs.py", "remediate.py", "store.py", "notify.py", "ai_diagnose.py", "ai_fix.py", "memory.py",
-                 "llm.py", "pipemedic_agent.py", "diagnose.py"}
+                 "llm.py", "pipemedic_agent.py", "diagnose.py", "fixplan.py", "runner_actions.py"}
 
 
 def run_with_timeout(fn, seconds: float):
@@ -93,6 +95,9 @@ class Config:
     pool_alerts: bool = False
     runner_logs: bool = False
     timer_failures: bool = True  # False = failures are investigated only when the hook reports them
+    plans: bool = True  # offer fix plans a person can approve
+    link_secret: str = ""  # signs the approval links in emails; without it the email points to the dashboard only
+    review_url: str = ""
     top: int = 30
 
     @classmethod
@@ -106,16 +111,19 @@ class Config:
                    act=flag("ACT_ENABLED"), fix_mode=os.getenv("FIX_MODE", "off").lower(), memory_on=flag("MEMORY"),
                    pool_alerts=os.getenv("POOL_ALERTS", "1") in ("1", "true", "yes"),
                    runner_logs=os.getenv("RUNNER_LOGS", "1") in ("1", "true", "yes"),
-                   timer_failures=os.getenv("WATCH_TIMER", "1") in ("1", "true", "yes"))
+                   timer_failures=os.getenv("WATCH_TIMER", "1") in ("1", "true", "yes"),
+                   plans=os.getenv("FIX_PLANS", "1") in ("1", "true", "yes"), link_secret=os.getenv("FIX_LINK_SECRET", ""),
+                   review_url=os.getenv("FIX_REVIEW_URL") or (base.health_api.rstrip("/") + "/api/fix/review" if base.health_api else ""))
 
 
 class Watcher:
     def __init__(self, cfg: Config, ado, store, health_fetch=fetch_health, llm=None, mailer=None,
-                 collect=collect_failure, now=None, runner_log_fetch=None):
+                 collect=collect_failure, now=None, runner_log_fetch=None, process_fetch=None):
         self.cfg, self.ado, self.store = cfg, ado, store
         self._env_override = cfg.notify_override_to
         self.health_fetch, self.llm, self.mailer, self.collect = health_fetch, llm, mailer, collect
         self.runner_log_fetch = runner_log_fetch  # (hostname, start, finish) -> runner_logs.collect() result
+        self.process_fetch = process_fetch  # hostname -> the runner's busiest processes (runner_actions.top_processes)
         self._now = now or (lambda: datetime.now(timezone.utc))
         self.hosts: dict = {}
         self.recent: list[dict] = []
@@ -362,9 +370,13 @@ class Watcher:
         notes = self._remediate(d)
         d["actions"] = notes
         link = run_url(cfg.org, cfg.project, d["build_id"])
+        proposal = None
         if cfg.fix_mode in ("propose", "open") and self.llm is not None:
             self._stage(bid, "drafting a fix")
-            d["fix"] = self._fix(d, link)
+            d["fix"], proposal = self._fix(d, link)
+        if cfg.plans:
+            self._stage(bid, "making fix plans")
+            d["plans"] = self._make_plans(d, proposal if cfg.fix_mode == "propose" else None)
         self._stage(bid, "saving")
         self.store.save_diagnosis(d)
         if vec is not None:
@@ -376,6 +388,7 @@ class Watcher:
         status = "not sent"
         if cfg.notify_on and self.mailer is not None and cfg.notify_default_to:
             to = cfg.notify_override_to or recipient_for(d, cfg.notify_default_to)
+            self._link_plans(d, to)
             subject, text, body = render_email(d, link, notes)
             self._stage(bid, "sending the email")
             try:
@@ -385,18 +398,51 @@ class Watcher:
         self.store.mark_seen(d["build_id"], f"done; email {status}"[:480])
         return {"run": d["build_id"], "verdict": d["verdict"], "email": status}
 
-    def _fix(self, d: dict, link: str) -> dict:
-        """Ask for an AI fix. Never raises: a failed attempt just means no fix is offered."""
-        try:
+    def _fix(self, d: dict, link: str) -> tuple[dict, dict | None]:
+        """Ask for an AI fix. Never raises: a failed attempt just means no fix is offered. Returns (summary, the proposal)."""
+        try:  # a step memory limit or similar lives in the pipeline file, so the model may propose a pipeline change there
             r = run_with_timeout(lambda: open_fix_pr(self.ado, self.llm, d, link, store=self.store, dry_run=self.cfg.fix_mode != "open",
-                                                     now=self._now()), AI_TIMEOUT_S)
+                                                     now=self._now(), allow_pipeline=d.get("category") == "configuration"), AI_TIMEOUT_S)
         except Exception as e:
-            return {"status": "error", "detail": str(e)[:200]}
+            return {"status": "error", "detail": str(e)[:200]}, None
         p = r.get("proposal") or {}
         return {"status": r["status"], "detail": r.get("detail", ""), "pr_id": r.get("pr_id"), "verify_build": r.get("verify_build"),
                 "summary": p.get("summary", ""), "confidence": p.get("confidence", ""),
                 "files": [f"{c['action']} {c['path']}" for c in p.get("changes", [])],
-                "pr_url": f"https://dev.azure.com/{self.cfg.org}/{self.cfg.project}/_git/{self.cfg.project}/pullrequest/{r['pr_id']}" if r.get("pr_id") else ""}
+                "pr_url": f"https://dev.azure.com/{self.cfg.org}/{self.cfg.project}/_git/{self.cfg.project}/pullrequest/{r['pr_id']}" if r.get("pr_id") else ""},             (p if r["status"] == "proposed" else {"detail": r.get("detail", ""), "problems": p.get("problems", [])})  # only a clean proposal can become a plan
+
+    BUSY_FLAGS = {"high-cpu", "high-memory", "out-of-memory (runner log)", "overloaded (runner log)"}
+
+    def _make_plans(self, d: dict, proposal: dict | None) -> list[dict]:
+        """Work out the fixes to offer and save them for approval. Never raises."""
+        try:
+            busy = None
+            flags = set((d.get("runner_health") or {}).get("flags", []))
+            if (self.process_fetch is not None and d.get("hostname") and d.get("verdict") in ("runner", "mixed")
+                    and (flags & self.BUSY_FLAGS or d.get("category") == "timeout")):
+                try:
+                    procs = run_with_timeout(lambda: self.process_fetch(d["hostname"]), RUNNER_LOGS_TIMEOUT_S)
+                    by = "mem" if flags & {"high-memory", "out-of-memory (runner log)"} else "cpu"
+                    busy = runner_actions.busiest(procs, by) or runner_actions.busiest(procs, "mem" if by == "cpu" else "cpu")
+                except Exception:
+                    log.exception("could not list the processes on %s", d["hostname"])
+            plans = fixplan.build_plans(d, proposal=proposal, busy_process=busy, now=self._now())
+            for plan in plans:
+                self.store.save_plan(plan)
+            return [{k: p.get(k) for k in ("plan_id", "kind", "title", "risk", "reason")} for p in plans]
+        except Exception:
+            log.exception("could not make fix plans for run %s", d.get("build_id"))
+            return []
+
+    def _link_plans(self, d: dict, to: str) -> None:
+        """Give each plan in the email a signed link to its approval page, for this recipient."""
+        if not (self.cfg.link_secret and self.cfg.review_url):
+            return
+        for p in d.get("plans") or []:
+            if p["kind"] != "manual":
+                full = {"build_id": d["build_id"], "plan_id": p["plan_id"],
+                        "expires": (self._now() + timedelta(hours=fixplan.PLAN_HOURS)).isoformat()}
+                p["link"] = f"{self.cfg.review_url}?t={fixplan.sign_link(self.cfg.link_secret, full, to)}"
 
     def _remediate(self, d: dict) -> list[str]:
         cfg = self.cfg
@@ -439,7 +485,8 @@ def build_watcher() -> Watcher:
             cfg.notify_endpoint, cfg.notify_from, to, subject, text, body, cred)
     return Watcher(cfg, AzureDevOps(cfg.org, cfg.project, credential=cred), store,
                    llm=FoundryLLM() if cfg.ai_on else None, mailer=mailer,
-                   runner_log_fetch=lambda host, start, finish: runner_logs.collect(cred, host, start, finish))
+                   runner_log_fetch=lambda host, start, finish: runner_logs.collect(cred, host, start, finish),
+                   process_fetch=lambda host: runner_actions.top_processes(cred, host))
 
 
 def run_once() -> dict:

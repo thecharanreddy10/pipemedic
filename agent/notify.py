@@ -50,6 +50,13 @@ def render_email(d: dict, url: str, actions: list[str] | None = None) -> tuple[s
                 else "A fix was drafted (not opened)")
         lines += [f"{head}", f"  {fix['summary']}"] + [f"  {f}" for f in fix["files"]] + [
             "  AI-written: a person must review it. PipeMedic never merges.", ""]
+    plans = [p for p in d.get("plans") or [] if p["kind"] != "manual"]
+    if plans:
+        lines += ["PipeMedic can fix this once you approve. Open a plan to see exactly what it will do:"]
+        for i, p in enumerate(plans, 1):
+            lines += [f"  {i}. {p['title']}"] + ([f"     Review and approve: {p['link']}"] if p.get("link") else [])
+        lines += [
+            "  Or use the Fix it section for this run in the PipeMedic dashboard. Nothing happens until someone approves.", ""]
     if actions:
         lines += ["Automatic actions:"] + [f"  {a}" for a in actions] + [""]
     lines += [f"Open the run: {url}", "", "Sent by PipeMedic. The verdict comes from rules; AI text is labelled."]
@@ -77,6 +84,12 @@ def render_email(d: dict, url: str, actions: list[str] | None = None) -> tuple[s
         body += (f'<p style="background:#f0f7ee;padding:8px 12px"><b>Proposed fix</b> ({e(fix["confidence"])} confidence): '
                  f'{e(fix["summary"])}<br>{e(", ".join(fix["files"]))}<br>AI-written. A person must review it; '
                  f'PipeMedic never merges.{link}</p>')
+    if plans:
+        rows = "".join(f'<li style="margin-bottom:6px">{e(p["title"])} <span style="color:#6b7280">({e(p.get("risk") or "")})</span>'
+                       + (f'<br><a href="{e(p["link"])}">Review and approve</a>' if p.get("link") else "") + "</li>" for p in plans)
+        body += (f'<div style="border:1px solid #d1d5db;padding:8px 14px;margin:14px 0"><b>PipeMedic can fix this once you approve</b>'
+                 f'<ol style="padding-left:20px">{rows}</ol><div style="color:#6b7280;font-size:12px">Each link opens a page that shows '
+                 f'the plan in full. Nothing happens until someone presses Approve there or in the dashboard.</div></div>')
     if actions:
         body += f"<p><b>Automatic actions</b></p><ul>{li(actions)}</ul>"
     body += (f'<p><a href="{e(url)}">Open the run in Azure DevOps</a></p>'

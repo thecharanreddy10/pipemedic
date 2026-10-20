@@ -161,6 +161,56 @@ class TableStore:
         rec = {**json.loads(e["json"]), **changes}
         t.upsert_entity({"PartitionKey": "failure", "RowKey": str(build_id), "json": json.dumps(rec), "vec": e.get("vec", "")})
 
+    # ---- fix plans (what PipeMedic offers to do, waiting for a person) ----
+    # A plan, with the full content of any change it would make, is kept compressed and split over several properties:
+    # Table Storage holds at most 32K characters in one string.
+    def save_plan(self, plan: dict) -> None:
+        import base64
+        import zlib
+        blob = base64.b64encode(zlib.compress(json.dumps(plan, default=str).encode())).decode()
+        parts = [blob[i:i + 30000] for i in range(0, len(blob), 30000)]
+        entity = {"PartitionKey": str(plan["build_id"]), "RowKey": plan["plan_id"], "status": plan.get("status", ""),
+                  "kind": plan.get("kind", ""), "verified": plan.get("verified", ""), "parts": len(parts),
+                  "time": datetime.now(timezone.utc).isoformat()}
+        entity.update({f"p{i}": p for i, p in enumerate(parts)})
+        self._t("FixPlans").upsert_entity(entity)
+
+    @staticmethod
+    def _plan_of(e) -> dict:
+        import base64
+        import zlib
+        return json.loads(zlib.decompress(base64.b64decode("".join(e[f"p{i}"] for i in range(int(e["parts"]))))))
+
+    def plans_for(self, build_id: int) -> list[dict]:
+        rows = self._t("FixPlans").query_entities(f"PartitionKey eq '{int(build_id)}'")
+        return sorted((self._plan_of(e) for e in rows), key=lambda p: p["plan_id"])
+
+    def get_plan(self, build_id: int, plan_id: str) -> dict | None:
+        from azure.core.exceptions import ResourceNotFoundError
+        try:
+            return self._plan_of(self._t("FixPlans").get_entity(str(int(build_id)), plan_id))
+        except (ResourceNotFoundError, KeyError):
+            return None
+
+    def update_plan(self, build_id: int, plan_id: str, **changes) -> dict:
+        plan = {**self.get_plan(build_id, plan_id), **changes}
+        self.save_plan(plan)
+        return plan
+
+    def claim_approval(self, build_id: int, plan_id: str, who: str, via: str) -> bool:
+        """Record that a person approved or rejected a plan. True for exactly one caller: a plan is decided once, even if the
+        dashboard and the email link are used at the same moment."""
+        from azure.core.exceptions import ResourceExistsError
+        try:
+            self._t("FixApprovals").create_entity({"PartitionKey": str(int(build_id)), "RowKey": plan_id, "who": who[:200], "via": via,
+                                                   "time": datetime.now(timezone.utc).isoformat()})
+            return True
+        except ResourceExistsError:
+            return False
+
+    def plans_to_verify(self) -> list[dict]:
+        return [self._plan_of(e) for e in self._t("FixPlans").query_entities("status eq 'done' and verified eq 'pending'")]
+
     # ---- open pool and runner alerts (so each problem is announced once) ----
     def pool_alert_state(self, scope: str | None = None) -> dict | None:
         """The problems currently open, or None if none were ever saved. Any other failure raises, so a table

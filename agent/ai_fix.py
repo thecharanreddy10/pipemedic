@@ -13,7 +13,9 @@ import re
 from ai_diagnose import redact
 
 import config
-FIXABLE_CATEGORIES = {"test-failure", "script-failure"}
+# Causes a change to the code (or, with approval, to a pipeline file) can fix.
+FIXABLE_CATEGORIES = {"test-failure", "script-failure", "static-analysis", "dependency", "code-error", "configuration"}
+PIPELINE_ROOT = "pipelines"
 FIXABLE_VERDICTS = {"code-or-config", "mixed"}
 MAX_FILES = 3
 MAX_OPEN_PER_PIPELINE = int(os.getenv("MAX_OPEN_FIXES_PER_PIPELINE", "3"))  # open fixes waiting for review, per pipeline
@@ -38,9 +40,10 @@ SCHEMA = {
 SYSTEM = (
     "You are a careful senior engineer fixing one failing CI run. Make the smallest change that fixes the ROOT CAUSE "
     "shown in the log. Rules: change only files under the code roots given to you. NEVER modify a test file or its expectations to make a "
-    "test pass; fix the code under test. NEVER touch pipeline definitions. Return the FULL new content of every file you "
+    "test pass; fix the code under test. __PIPELINES__ Return the FULL new content of every file you "
     "change (not a diff). Use action 'edit' for an existing file and 'create' for a new file. If a file the log says is "
-    "missing must be created, choose its path from the repository file list. If you are not sure what the fix is, return "
+    "missing must be created, choose its path from the repository file list: paths in the log are often relative to the "
+    "step's working folder (for example a service folder), but every path you return must be the full path from the repository root. If you are not sure what the fix is, return "
     "no changes and explain why. NEVER weaken, skip or remove a check, validation, assertion, raise or non-zero exit to "
     "make a failure go away: if a required file is missing, CREATE it with minimal valid content instead of making the "
     "script tolerate its absence. In any file you create, use the obvious placeholder REPLACE_ME for anything "
@@ -53,11 +56,35 @@ def eligible(d: dict) -> bool:
     return d.get("category") in FIXABLE_CATEGORIES and d.get("verdict") in FIXABLE_VERDICTS
 
 
+def run_branch(d: dict) -> str:
+    """The branch the failed run built. A fix is made on top of it and proposed back into it, so a bug that exists only on
+    that branch can be fixed there."""
+    ref = (d.get("source_branch") or "").removeprefix("refs/heads/")
+    return ref or config.settings().branch
+
+
+def roots(allow_pipeline: bool = False) -> list[str]:
+    return config.settings().code_roots + ([PIPELINE_ROOT] if allow_pipeline else [])
+
+
+def is_pipeline_file(path: str) -> bool:
+    return path.startswith(PIPELINE_ROOT + "/") or (path.endswith((".yml", ".yaml")) and "pipeline" in path.lower())
+
+
+NO_PIPELINES = "NEVER touch pipeline definitions."
+PIPELINES_ALLOWED = ("You may change a pipeline definition under pipelines/ when the cause is a setting there (a memory limit, a "
+                     "timeout, a missing parameter); change only that setting and say in the explanation that a pipeline file changes.")
+
+
+def system_prompt(allow_pipeline: bool = False) -> str:
+    return SYSTEM.replace("__PIPELINES__", PIPELINES_ALLOWED if allow_pipeline else NO_PIPELINES)
+
+
 def _is_test_path(path: str) -> bool:
     return config.is_test_path(path)
 
 
-def pick_context(tree_paths: list[str], log: str, limit: int = MAX_CONTEXT_FILES) -> list[str]:
+def pick_context(tree_paths: list[str], log: str, limit: int = MAX_CONTEXT_FILES, allow_pipeline: bool = False) -> list[str]:
     """Choose which repository files to show the model: those named in the log, plus the service's source files."""
     named = set(re.findall(r"[\w./-]+\.(?:py|sh|json|ya?ml|txt|js|ts|cfg|ini|toml)", log or ""))
     chosen: list[str] = []
@@ -72,6 +99,9 @@ def pick_context(tree_paths: list[str], log: str, limit: int = MAX_CONTEXT_FILES
         if any(path.startswith(s + "/") for s in services) and path not in chosen and not _is_test_path(path) \
                 and path.endswith((".py", ".sh", ".json", ".js", ".ts")) and "/__pycache__/" not in path:
             chosen.append(path)
+    if allow_pipeline:  # the pipeline's own definitions, so a setting there can be seen and changed
+        chosen = chosen[:limit] + [p for p in tree_paths if p.startswith(PIPELINE_ROOT + "/") and p.endswith((".yml", ".yaml")) and p not in chosen]
+        return chosen[:limit + 4]
     return chosen[:limit]
 
 
@@ -82,7 +112,7 @@ def _guard_count(text: str) -> int:
     return len(_GUARDS.findall(text or ""))
 
 
-def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | None = None) -> list[str]:
+def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | None = None, allow_pipeline: bool = False) -> list[str]:
     """Return the list of reasons the proposal must be rejected (empty means acceptable)."""
     old_contents = old_contents or {}
     problems = []
@@ -97,11 +127,11 @@ def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | 
         if path in seen:
             problems.append(f"{path} appears twice")
         seen.add(path)
-        if ".." in path.split("/") or path.startswith("/") or not config.under_code_root(path):
-            problems.append(f"{path} is outside the code roots ({', '.join(config.settings().code_roots)})")
+        if ".." in path.split("/") or path.startswith("/") or not config.under_code_root(path, roots(allow_pipeline)):
+            problems.append(f"{path} is outside the code roots ({', '.join(roots(allow_pipeline))})")
         if _is_test_path(path):
             problems.append(f"{path} is a test file; fixes must change the code, not the tests")
-        if path.endswith((".yml", ".yaml")) and "pipeline" in path.lower():
+        if is_pipeline_file(path) and not allow_pipeline:
             problems.append(f"{path} is a pipeline definition")
         if action == "edit" and path not in existing:
             problems.append(f"{path} does not exist, so it cannot be edited")
@@ -123,10 +153,10 @@ def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | 
     return problems
 
 
-def propose_fix(llm, d: dict, tree_paths: list[str], read_file) -> dict:
+def propose_fix(llm, d: dict, tree_paths: list[str], read_file, allow_pipeline: bool = False) -> dict:
     """Ask the model for a fix. `read_file(path)` returns a file's text. Returns the proposal plus `problems`."""
     log = d.get("log_excerpt", "")
-    context_paths = pick_context(tree_paths, log)
+    context_paths = pick_context(tree_paths, log, allow_pipeline=allow_pipeline)
     files = []
     for p in context_paths:
         try:
@@ -138,9 +168,9 @@ def propose_fix(llm, d: dict, tree_paths: list[str], read_file) -> dict:
     user = (f"Failing pipeline: {d['pipeline']} (run {d['build_id']}), step: {d['failed_step']}\n"
             f"Rules say: {d['category']}, {d['root_cause']}\n"
             + (f"AI analysis: {ai['likely_cause']}\n" if ai else "")
-            + f"\nLog excerpt:\n---\n{redact(log)}\n---\n\nRepository files under {', '.join(config.settings().code_roots)}:\n{listing}\n\n"
+            + f"\nLog excerpt:\n---\n{redact(log)}\n---\n\nRepository files under {', '.join(roots(allow_pipeline))}:\n{listing}\n\n"
             + "\n\n".join(f"=== {p} ===\n{redact(c)}" for p, c in files))
-    msg = llm.chat([{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}],
+    msg = llm.chat([{"role": "system", "content": system_prompt(allow_pipeline)}, {"role": "user", "content": user}],
                    json_schema=SCHEMA, max_tokens=8000)
     proposal = json.loads(msg.get("content") or "{}")
     shown = dict(files)
@@ -151,8 +181,9 @@ def propose_fix(llm, d: dict, tree_paths: list[str], read_file) -> dict:
                 old[c["path"]] = shown.get(c["path"]) or read_file(c["path"])
             except Exception:
                 pass
-    proposal["problems"] = validate(proposal, set(tree_paths), old)
+    proposal["problems"] = validate(proposal, set(tree_paths), old, allow_pipeline)
     proposal["context_files"] = context_paths
+    proposal["old_contents"] = old  # so a person approving the change can see exactly what it replaces
     return proposal
 
 
@@ -162,7 +193,9 @@ def pr_text(d: dict, proposal: dict, run_link: str) -> tuple[str, str]:
     body = (f"**AI-generated fix. A person must review it before merging.**\n\n"
             f"Failing run: {run_link}\n\n**Why it failed:** {d['root_cause']}\n\n"
             f"**What this changes:** {proposal['explanation']}\n\n**Risk:** {proposal['risk']}\n\n"
-            f"Confidence: {proposal['confidence']}\n\nFiles changed:\n"
+            + ("**This changes a pipeline file.** A person approved a change to the pipeline definition.\n\n"
+               if any(is_pipeline_file(c["path"]) for c in proposal["changes"]) else "")
+            + f"Confidence: {proposal['confidence']}\n\nFiles changed:\n"
             + "\n".join(f"- `{c['path']}` ({c['action']})" for c in proposal["changes"])
             + ("\n\n**Check new files carefully:** their contents were written by an AI. Replace every REPLACE_ME "
                "and confirm any other value before merging." if any(c["action"] == "create" for c in proposal["changes"]) else "")
@@ -177,8 +210,12 @@ def pr_text(d: dict, proposal: dict, run_link: str) -> tuple[str, str]:
 MAX_PRS_PER_DAY = 3
 
 
-def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = True, now=None) -> dict:
-    """Propose a fix for diagnosis `d`. With dry_run False, also open the pull request and re-run the pipeline on it."""
+def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = True, now=None, allow_pipeline: bool = False,
+                proposal: dict | None = None) -> dict:
+    """Propose a fix for diagnosis `d`. With dry_run False, also open the pull request and re-run the pipeline on it.
+
+    The fix is made on the failed run's own branch and proposed back into it. Pass `proposal` to open exactly the proposal a
+    person approved instead of asking the model again."""
     from datetime import datetime, timedelta, timezone
 
     if not eligible(d):
@@ -202,7 +239,10 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
         if len(recent) >= MAX_PRS_PER_DAY:
             return {"status": "skipped", "detail": f"already opened {MAX_PRS_PER_DAY} fixes in the last day"}
 
-    proposal = propose_fix(llm, d, ado.repo_paths(), ado.read_file)
+    base = run_branch(d)
+    if proposal is None:
+        tree = [p for r in roots(allow_pipeline) for p in ado.repo_paths(scope="/" + r, branch=base)]
+        proposal = propose_fix(llm, d, tree, lambda p: ado.read_file(p, branch=base), allow_pipeline)
     if proposal["problems"]:
         return {"status": "rejected", "detail": "; ".join(proposal["problems"]), "proposal": proposal}
     if proposal["confidence"] == "low":
@@ -218,15 +258,15 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
         return {"status": "proposed", "proposal": proposal, "title": title}
 
     branch = f"pipemedic/fix-run-{d['build_id']}"
-    ado.create_branch_with_commit(branch, proposal["changes"], title)
-    pr_id = ado.create_pull_request(branch, title, body)
+    ado.create_branch_with_commit(branch, proposal["changes"], title, base=base)
+    pr_id = ado.create_pull_request(branch, title, body, target=base)
     verify = ado.queue_run(d["pipeline_id"], f"refs/heads/{branch}")
     ado.comment_on_pull_request(pr_id, f"PipeMedic re-ran the pipeline on this branch: run {verify}. The result will be posted here.")
     if store is not None:
         store.record_fix({"build_id": d["build_id"], "pipeline": d["pipeline"], "pr_id": pr_id, "verify_build": verify,
                           "branch": branch, "title": title[:120], "status": "open", "verified": "pending", "time": now.isoformat(),
-                          "files": [c["path"] for c in proposal["changes"]], "signature": signature})
-    return {"status": "opened", "pr_id": pr_id, "verify_build": verify, "branch": branch, "proposal": proposal, "title": title}
+                          "files": [c["path"] for c in proposal["changes"]], "signature": signature, "base": base})
+    return {"status": "opened", "pr_id": pr_id, "verify_build": verify, "branch": branch, "base": base, "proposal": proposal, "title": title}
 
 
 def check_fix_verifications(ado, store) -> list[str]:

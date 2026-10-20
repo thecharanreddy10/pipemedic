@@ -128,6 +128,14 @@ def watch_failures(timer: func.TimerRequest) -> None:
         logging.info("PipeMedic watcher: %s", run_once())
     except Exception:
         logging.exception("PipeMedic watcher failed")
+    try:  # approved fixes whose re-run has finished: tell the person who approved it how it went
+        from fix_executor import verify_pending
+
+        told = verify_pending()
+        if told:
+            logging.info("PipeMedic fix results: %s", told)
+    except Exception:
+        logging.exception("PipeMedic fix check failed")
 
 
 @app.route(route="version", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -138,3 +146,82 @@ def version(req: func.HttpRequest) -> func.HttpResponse:
         return _json({"version": open(path, encoding="utf-8").read().strip()})
     except OSError:
         return _json({"version": "unknown"})
+
+
+# ---------------- fix with approval ----------------
+FIX_QUEUE = "pipemedic-fixes"
+
+
+def _html(page: str, status: int = 200) -> func.HttpResponse:
+    return func.HttpResponse(page, status_code=status, mimetype="text/html",
+                             headers={"Cache-Control": "no-store", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer"})
+
+
+def _decide(build_id: int, plan_id: str, approve: bool, who: str, via: str, msg: func.Out[str]):
+    import config
+    from azure_auth import get_credential
+    from fix_executor import decide
+    from store import TableStore
+
+    store = TableStore(config.settings().state_table_url, get_credential())
+    ok, text, plan = decide(store, build_id, plan_id, approve, who, via)
+    if ok and approve:
+        msg.set(json.dumps({"build_id": build_id, "plan_id": plan_id}))
+    return ok, text, plan
+
+
+@app.route(route="fix/decide", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
+@app.queue_output(arg_name="msg", queue_name=FIX_QUEUE, connection="AzureWebJobsStorage")
+def fix_decide(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
+    """The dashboard's Approve and Reject buttons. Body: {build_id, plan_id, approve, who}."""
+    try:
+        b = req.get_json()
+        build_id, plan_id, approve, who = int(b["build_id"]), str(b["plan_id"]), bool(b["approve"]), str(b["who"])
+    except (ValueError, KeyError, TypeError):
+        return _json({"error": "build_id, plan_id, approve and who are required"}, 400)
+    ok, text, plan = _decide(build_id, plan_id, approve, who, "dashboard", msg)
+    return _json({"ok": ok, "message": text, "status": (plan or {}).get("status")}, 200 if ok else 409)
+
+
+@app.route(route="fix/review", methods=["GET", "POST"], auth_level=func.AuthLevel.ANONYMOUS)
+@app.queue_output(arg_name="msg", queue_name=FIX_QUEUE, connection="AzureWebJobsStorage")
+def fix_review(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
+    """The page behind an email's approval link. GET only shows the plan; the decision is a POST from its buttons."""
+    import fixplan
+    import fix_review as pages
+
+    secret = os.getenv("FIX_LINK_SECRET", "")
+    token = req.params.get("t") or (req.form.get("t") if req.method == "POST" else "") or ""
+    link = fixplan.read_link(secret, token) if secret else None
+    if not link:
+        return _html(pages.message_page("Link not valid", "This approval link is damaged or has expired. "
+                                        "Open the run in the PipeMedic dashboard to see its current fix plans.", False), 403)
+    if req.method == "POST":
+        action = req.form.get("action")
+        if action not in ("approve", "reject"):
+            return _html(pages.message_page("Nothing decided", "Press Approve or Reject on the plan page.", False), 400)
+        ok, text, plan = _decide(link["build_id"], link["plan_id"], action == "approve", link["recipient"], "email", msg)
+        return _html(pages.message_page(("Approved" if action == "approve" else "Rejected") if ok else "Not decided", text, ok),
+                     200 if ok else 409)
+    import config
+    from azure_auth import get_credential
+    from store import TableStore
+
+    plan = TableStore(config.settings().state_table_url, get_credential()).get_plan(link["build_id"], link["plan_id"])
+    if not plan:
+        return _html(pages.message_page("Plan not found", "This fix plan no longer exists.", False), 404)
+    return _html(pages.review_page(plan, token, link["recipient"], blocked=fixplan.is_runnable(plan)))
+
+
+@app.queue_trigger(arg_name="msg", queue_name=FIX_QUEUE, connection="AzureWebJobsStorage")
+def execute_fix(msg: func.QueueMessage) -> None:
+    """Carries out one approved fix plan with the app's own identity, then reports the result."""
+    import logging
+
+    body = json.loads(msg.get_body().decode("utf-8"))
+    try:
+        from fix_executor import execute
+
+        logging.info("PipeMedic fix: %s", execute(int(body["build_id"]), str(body["plan_id"])))
+    except Exception:  # not retried: carry_out records its own failures, and a half-done change must not run twice
+        logging.exception("PipeMedic fix failed")

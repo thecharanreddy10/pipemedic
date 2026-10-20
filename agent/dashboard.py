@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import ui_data as D  # noqa: E402
 from ado_browse import agents_involved, branch_name, duration_label, job_rows, pipeline_rows, seconds_between, status_of  # noqa: E402
+import fixplan  # noqa: E402
+from fix_review import change_diff  # noqa: E402
 from history import availability, bucket_minutes, duration_text, silent_periods  # noqa: E402
 
 st.set_page_config(page_title="PipeMedic", page_icon="🩺", layout="wide", initial_sidebar_state="collapsed")
@@ -148,6 +150,95 @@ def failure_view(d, source, bid, can_read_logs):
     st.caption(source)
 
 
+PLAN_STATUS = {"proposed": ("info", "Waiting for approval"), "approved": ("info", "Approved, starting"), "running": ("info", "Being carried out"),
+               "rejected": ("muted", "Rejected"), "superseded": ("muted", "Not needed: another plan was approved"), "failed": ("critical", "Could not be carried out")}
+VERIFIED = {"passed": ("good", "Done, and the pipeline passed"), "failed": ("critical", "Done, but the pipeline failed again"),
+            "pending": ("info", "Done, waiting for the pipeline result")}
+
+
+def plan_badge(p):
+    if p.get("status") == "done":
+        return badge(*VERIFIED.get(p.get("verified"), VERIFIED["pending"]))
+    if p.get("status") == "proposed" and fixplan.is_runnable(p):
+        return badge("muted", "Expired" if p.get("kind") != "manual" else "For a person to do")
+    return badge(*PLAN_STATUS.get(p.get("status"), ("muted", p.get("status", "-"))))
+
+
+def fix_section(org, project, bid):
+    """The fixes PipeMedic offers for this run. Nothing is done until someone approves one here or from the email."""
+    try:
+        plans = D.fix_plans(org, project, bid)
+    except Exception as e:
+        st.caption(f"Could not load the fix plans: {e}")
+        return
+    if not plans:
+        return
+    section("Fix it")
+    st.caption("PipeMedic made these plans when the run failed. Read a plan, then approve it to let PipeMedic carry it out. "
+               "Code changes arrive as a pull request that a person still has to merge.")
+    who = D.signed_in_user()
+    for p in plans:
+        with st.container(border=True):
+            st.markdown(f'{plan_badge(p)}<div class="row-title" style="margin-top:8px">{esc(p["title"])}</div>'
+                        f'<div class="meta">Risk: {esc(p.get("risk") or "-")}</div>', unsafe_allow_html=True)
+            with st.expander("What it will do"):
+                for i, s in enumerate(p.get("steps", []), 1):
+                    st.markdown(f"{i}. {s}")
+                st.markdown(f"**How the result is checked:** {p.get('check', '')}  \n**How to undo it:** {p.get('undo', '')}")
+                if p.get("reason"):
+                    st.markdown(f"**Why PipeMedic will not change this itself:** {p['reason']}")
+                if p.get("explanation"):
+                    st.markdown(f"**Why this change** (AI, {p.get('confidence', '')} confidence): {p['explanation']}")
+                for c in p.get("changes") or []:
+                    st.markdown(f"`{c['action']} {c['path']}`")
+                    st.code(change_diff(c, c.get("old_content", "")), language="diff")
+                if p.get("process"):
+                    pr = p["process"]
+                    st.markdown(f"**Process to stop:** `{pr.get('comm')}` (process {pr.get('pid')}, user {pr.get('user')}): `{pr.get('args', '')}`")
+            r = p.get("result") or {}
+            if r:
+                facts = []
+                if r.get("pr_id"):
+                    facts.append(f"[Pull request {r['pr_id']}](https://dev.azure.com/{org}/{project}/_git/{project}/pullrequest/{r['pr_id']}) "
+                                 f"into {r.get('base')}; proving run {r.get('proving_run')}")
+                if r.get("disk"):
+                    facts.append(f"Free disk went from {r['disk'].get('free_mb_before')} MB to {r['disk'].get('free_mb_after')} MB")
+                if r.get("process"):
+                    facts.append(f"Stopping the process: {r['process'].get('detail')}")
+                if r.get("rerun"):
+                    facts.append(f"[Re-run {r['rerun']}](https://dev.azure.com/{org}/{project}/_build/results?buildId={r['rerun']})")
+                if r.get("error"):
+                    facts.append(f"Error: {r['error']}")
+                st.markdown("  \n".join(facts))
+            if p.get("decided_by"):
+                st.caption(f"{'Approved' if p.get('status') != 'rejected' else 'Rejected'} by {p['decided_by']} from the {p.get('decided_via')}.")
+            if not fixplan.is_runnable(p):
+                if not who:
+                    st.caption("Sign in with az login to approve plans here, or use the link in the failure email.")
+                    continue
+                key = f"plan::{p['plan_id']}"
+                if st.session_state.get(key) == "confirm":
+                    st.warning(f"Approve this plan as {who}? PipeMedic will start right away.")
+                    c1, c2, _ = st.columns([1, 1, 4])
+                    if c1.button("Yes, run it", key=key + "::yes", type="primary"):
+                        ok, msg = D.decide_plan(bid, p["plan_id"], True, who)
+                        st.session_state[key] = None
+                        st.toast(msg, icon=":material/check_circle:" if ok else ":material/error:")
+                        st.rerun()
+                    if c2.button("Cancel", key=key + "::no"):
+                        st.session_state[key] = None
+                        st.rerun()
+                else:
+                    c1, c2, _ = st.columns([1, 1, 4])
+                    if c1.button("Approve", key=key + "::approve", type="primary", icon=":material/check:"):
+                        st.session_state[key] = "confirm"
+                        st.rerun()
+                    if c2.button("Reject", key=key + "::reject"):
+                        ok, msg = D.decide_plan(bid, p["plan_id"], False, who)
+                        st.toast(msg, icon=":material/check_circle:" if ok else ":material/error:")
+                        st.rerun()
+
+
 def run_detail(run, name, siblings, org, project):
     bid = run["id"]
     colour, label = status_of(run)
@@ -179,6 +270,7 @@ def run_detail(run, name, siblings, org, project):
             failure_view(d, source, bid, can_read_logs=True)
         except Exception as e:
             st.error(f"Could not work out why this run failed: {e}")
+        fix_section(org, project, bid)
     else:
         st.markdown(f'<div class="card" style="margin-top:12px">{badge("good", "This run succeeded, so there is nothing to explain.")}</div>', unsafe_allow_html=True)
 

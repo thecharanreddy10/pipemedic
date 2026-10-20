@@ -52,6 +52,7 @@ class Settings:
     resource_group: str = field(default_factory=lambda: _env("AZURE_RESOURCE_GROUP", "pipemedic-rg"))
     account_name: str = field(default_factory=lambda: _env("ACCOUNT_NAME", ""))
     health_api: str = field(default_factory=lambda: _env("HEALTH_API", ""))
+    function_app: str = field(default_factory=lambda: _env("FUNCTION_APP", ""))
     state_table_url: str = field(default_factory=lambda: _env("STATE_TABLE_URL", ""))
     ai_endpoint: str = field(default_factory=lambda: _env("FOUNDRY_ENDPOINT", ""))
     ai_deployment: str = field(default_factory=lambda: _env("FOUNDRY_DEPLOYMENT", "gpt-5-mini"))

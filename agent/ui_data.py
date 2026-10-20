@@ -142,3 +142,49 @@ def health_history(minutes):
 
 
 __all__ = ["cfg", "assess_flaky"]
+
+
+# ---------------- fix plans ----------------
+@st.cache_data(ttl=10, show_spinner=False)
+def fix_plans(org, project, build_id):
+    """The fixes PipeMedic offered for a run, with their current status. Only for the project the agent watches."""
+    if not watched_project(org, project):
+        return []
+    from store import DEFAULT_STATE_URL, TableStore
+    return TableStore(DEFAULT_STATE_URL, entra()).plans_for(build_id)
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def signed_in_user() -> str:
+    """The Azure sign-in's user name, recorded as the approver. Empty when it cannot be read."""
+    import base64
+    import json as _json
+    from azure_auth import ARM_SCOPE
+    try:
+        claims = entra().get_token(ARM_SCOPE).token.split(".")[1]
+        c = _json.loads(base64.urlsafe_b64decode(claims + "=" * (-len(claims) % 4)))
+        return c.get("upn") or c.get("unique_name") or c.get("preferred_username") or c.get("oid", "")
+    except Exception:
+        return ""
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _function_key() -> str:
+    from azure_auth import ARM_SCOPE
+    url = (f"https://management.azure.com/subscriptions/{cfg.subscription_id}/resourceGroups/{cfg.resource_group}/providers/"
+           f"Microsoft.Web/sites/{cfg.function_app}/host/default/listKeys?api-version=2023-12-01")
+    r = requests.post(url, headers={"Authorization": "Bearer " + entra().get_token(ARM_SCOPE).token}, timeout=30)
+    r.raise_for_status()
+    return r.json()["functionKeys"]["default"]
+
+
+def decide_plan(build_id, plan_id, approve, who) -> tuple[bool, str]:
+    """Send a decision to the agent in Azure, which records it once and carries out an approved plan."""
+    r = requests.post(f"{HEALTH_API.rstrip('/')}/api/fix/decide", params={"code": _function_key()}, timeout=30,
+                      json={"build_id": int(build_id), "plan_id": plan_id, "approve": bool(approve), "who": who})
+    try:
+        body = r.json()
+    except ValueError:
+        return False, f"The agent answered HTTP {r.status_code}."
+    fix_plans.clear()
+    return bool(body.get("ok")), body.get("message") or body.get("error") or f"HTTP {r.status_code}"

@@ -13,7 +13,7 @@ AGENT = os.path.join(HERE, "..", "agent")
 FUNCTION_FILES = ["function_app.py", "host.json", "requirements.txt"]
 AGENT_MODULES = ["pipemedic_agent.py", "watcher.py", "diagnose.py", "flaky.py", "ai_diagnose.py", "llm.py", "remediate.py",
                  "pool_status.py", "predict.py", "azure_auth.py", "store.py", "notify.py", "ai_fix.py", "memory.py", "config.py", "chat_agent.py",
-                 "pool_alerts.py", "runner_logs.py", "event_hook.py"]
+                 "pool_alerts.py", "runner_logs.py", "event_hook.py", "fixplan.py", "runner_actions.py", "fix_executor.py", "fix_review.py"]
 
 
 def version_stamp() -> str:

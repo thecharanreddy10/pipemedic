@@ -135,12 +135,14 @@ class FakeStore:
 
 class FakeAdo:
     def __init__(self):
-        self.calls, self.pr_status, self.build_state = [], "active", {"status": "inProgress"}
+        self.calls, self.reads, self.pr_status, self.build_state = [], [], "active", {"status": "inProgress"}
 
-    def repo_paths(self): return TREE
-    def read_file(self, p): return FILES.get(p, "# file\n")
-    def create_branch_with_commit(self, branch, changes, message): self.calls.append(("branch", branch, len(changes))); return "c1"
-    def create_pull_request(self, source, title, desc): self.calls.append(("pr", source)); return 77
+    def repo_paths(self, scope="/services", branch="main"):  # a read, not an action: kept apart from calls
+        self.reads.append((scope, branch))
+        return [p for p in TREE if p.startswith(scope.lstrip("/") + "/")]
+    def read_file(self, p, branch="main"): return FILES.get(p, "# file\n")
+    def create_branch_with_commit(self, branch, changes, message, base="main"): self.calls.append(("branch", branch, len(changes), base)); return "c1"
+    def create_pull_request(self, source, title, desc, target="main"): self.calls.append(("pr", source, target)); return 77
     def queue_run(self, pid, ref): self.calls.append(("queue", pid, ref)); return 500
     def comment_on_pull_request(self, pr, text): self.calls.append(("comment", pr, text))
     def pull_request(self, pr): return {"status": self.pr_status}
@@ -239,3 +241,42 @@ def test_the_same_failure_is_not_fixed_twice_and_the_open_fix_cap_holds():
     full = FakeStore([_open(i, [f"f{i}.py"], step=f"step {i}") for i in range(1, 4)])
     r = open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=full, dry_run=False)
     assert r["status"] == "skipped" and "3 fixes" in r["detail"]
+
+
+# ---------------- fixes are made on the failed run's own branch ----------------
+def test_a_fix_is_made_on_the_runs_branch_and_proposed_back_into_it():
+    ado, store = FakeAdo(), FakeStore()
+    r = open_fix_pr(ado, FakeLLM(proposal(change())), d(source_branch="refs/heads/demo/test-failure"), "link", store=store, dry_run=False)
+    assert r["status"] == "opened" and r["base"] == "demo/test-failure"
+    assert ("/services", "demo/test-failure") in ado.reads
+    branch_call = next(c for c in ado.calls if c[0] == "branch")
+    pr_call = next(c for c in ado.calls if c[0] == "pr")
+    assert branch_call[3] == "demo/test-failure" and pr_call[2] == "demo/test-failure"
+    assert store.fixes()[0]["base"] == "demo/test-failure"
+
+
+def test_without_a_branch_the_default_branch_is_used():
+    from ai_fix import run_branch
+    assert run_branch({}) == "main" and run_branch({"source_branch": "refs/heads/feature/x"}) == "feature/x"
+
+
+def test_lint_dependency_code_and_config_failures_can_be_fixed_too():
+    for category in ("static-analysis", "dependency", "code-error", "configuration"):
+        assert eligible(d(category=category)), category
+    assert not eligible(d(category="network")) and not eligible(d(category="permissions"))
+
+
+def test_a_pipeline_file_is_refused_unless_a_person_allowed_it():
+    from ai_fix import system_prompt
+    pipe = {"changes": [{"path": "pipelines/templates/service-ci.yml", "action": "edit", "new_content": "stages: []\n"}]}
+    existing = {"pipelines/templates/service-ci.yml"}
+    assert any("pipeline" in p for p in validate(pipe, existing))
+    assert validate(pipe, existing, allow_pipeline=True) == []
+    assert "NEVER touch pipeline" in system_prompt(False) and "may change a pipeline definition" in system_prompt(True)
+
+
+def test_an_approved_proposal_is_opened_as_it_is_without_asking_the_model_again():
+    ado, llm = FakeAdo(), FakeLLM(proposal(change()))
+    approved = {**proposal(change()), "problems": []}
+    r = open_fix_pr(ado, llm, d(), "link", store=FakeStore(), dry_run=False, proposal=approved)
+    assert r["status"] == "opened" and llm.calls == [] and ado.reads == []

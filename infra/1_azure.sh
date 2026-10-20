@@ -79,12 +79,16 @@ for r in "Storage Table Data Contributor:$(ask storage account show -n "$STORAGE
 done
 
 echo "== Function App settings"
+# Signs the approval links in emails. Kept when it already exists, so links already sent keep working.
+LINK_SECRET=$(az functionapp config appsettings list -n "$FUNCTION_APP" -g "$RG" --query "[?name=='FIX_LINK_SECRET'].value | [0]" -o tsv 2>/dev/null || true)
+[ -n "$LINK_SECRET" ] || LINK_SECRET=$(python -c "import secrets; print(secrets.token_hex(32))" 2>/dev/null || openssl rand -hex 32)
 run az functionapp config appsettings set -n "$FUNCTION_APP" -g "$RG" -o none --settings \
   ADO_ORG="$ADO_ORG" ADO_PROJECT="$ADO_PROJECT" ADO_REPO="$ADO_PROJECT" ADO_POOL="$ADO_POOL" \
   AZURE_SUBSCRIPTION_ID="$SUB_ID" AZURE_RESOURCE_GROUP="$RG" \
   HEALTH_API="https://$FUNCTION_APP.azurewebsites.net" STATE_TABLE_URL="https://$STORAGE.table.core.windows.net" \
   FOUNDRY_ENDPOINT="https://$AI_ACCOUNT.cognitiveservices.azure.com" FOUNDRY_DEPLOYMENT=gpt-5-mini FOUNDRY_EMBED_DEPLOYMENT=embed-small \
   AI_IN_WATCHER=1 MEMORY=1 FIX_MODE="$FIX_MODE" ACT_ENABLED="$ACT_ENABLED" \
+  FIX_PLANS=1 FIX_LINK_SECRET="$LINK_SECRET" \
   NOTIFY_ENABLED=1 NOTIFY_ENDPOINT="https://$COMM_HOST" NOTIFY_FROM="DoNotReply@$MAIL_DOMAIN" NOTIFY_DEFAULT_TO="$NOTIFY_TO" \
   SCM_DO_BUILD_DURING_DEPLOYMENT=true
 

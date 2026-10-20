@@ -43,3 +43,22 @@ same plan and an **Approve** link. After approval the page and an email show the
 6. Live tests: `test-failure`, `lint-error` and `dependency-missing` end in a proven pull request; `memory-hog` in a pipeline-file
    pull request; `disk-full` is cleaned and re-run; `cpu-starvation` has the busy process stopped and re-runs; a stopped agent
    is restarted; and a VM restart brings a runner back.
+
+## Where it lives in the code
+
+| Part | File |
+|---|---|
+| Which plans to offer, expiry, signed links | `agent/fixplan.py` |
+| The runner scripts and the process rules | `agent/runner_actions.py` |
+| Deciding once, carrying out, checking the re-run | `agent/fix_executor.py` |
+| The email link's page and the result email | `agent/fix_review.py` |
+| Plans and decisions in Table Storage (`FixPlans`, `FixApprovals`) | `agent/store.py` |
+| Making the plans when a run fails | `agent/watcher.py` (`_make_plans`) |
+| `POST /api/fix/decide` (dashboard, function key), `GET/POST /api/fix/review` (email link), queue `pipemedic-fixes` | `health-api/function_app.py` |
+| The Fix it section | `agent/dashboard.py` (`fix_section`) |
+
+Settings: `FIX_PLANS=1` turns plans on; `FIX_LINK_SECRET` signs the email links (created by `infra/1_azure.sh`);
+`FIX_MODE=propose` lets the AI draft the change a pull-request plan carries.
+
+Differences from the first draft of this plan: a flaky test is offered a re-run only (no quarantine pull request), and a plan
+expires after 24 hours rather than also when a newer run appears.

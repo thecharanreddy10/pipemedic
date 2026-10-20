@@ -274,3 +274,35 @@ def test_scoped_setting_keys_are_valid_table_storage_row_keys():
     for scope in ("Hackathon925/Pipemedic", "a/b c"):
         key = TableStore._key("fix_mode", scope)
         assert not any(ch in key for ch in r"/\#?"), key
+
+
+def test_a_failure_gets_fix_plans_saved_and_the_email_links_each_plan_for_its_recipient():
+    import fixplan
+    w, store, sent = make([b(1)], link_secret="s3cret", review_url="https://api.example/api/fix/review")
+    saved = []
+    store.save_plan = saved.append
+    bodies = []
+    w.mailer = lambda to, s, t, h: bodies.append((to, t)) or "Succeeded"
+    net_log = "curl: (6) Could not resolve host: packages.example.com" + chr(10) + "##[error]Bash exited with code '6'."
+    w.collect = lambda ado, build, hosts: {**collect(ado, build, hosts), "log_text": net_log}  # noqa: E731
+    w.run_once()
+    w.ado.builds = [b(1), b(2)]
+    w.cfg.fix_mode = "off"
+    w.run_once()
+    assert saved and all(p["build_id"] == 2 and p["status"] == "proposed" for p in saved)
+    plans = store.diags[2]["plans"]
+    assert [p["plan_id"] for p in plans] == [p["plan_id"] for p in saved]
+    automatic = [p for p in plans if p["kind"] != "manual"]
+    assert [p["kind"] for p in automatic] == ["rerun"], store.diags[2]["category"]
+    if automatic:
+        token = automatic[0]["link"].split("?t=")[1]
+        assert fixplan.read_link("s3cret", token)["recipient"] == bodies[0][0]
+        assert "Review and approve" in bodies[0][1]
+
+
+def test_making_plans_never_stops_the_email():
+    w, store, sent = make([b(1)])
+    w.run_once()
+    w.ado.builds = [b(1), b(2)]
+    w.run_once()  # FakeStore has no save_plan: plans fail, the diagnosis and email still go out
+    assert len(sent) == 1 and store.diags[2]["plans"] == []
