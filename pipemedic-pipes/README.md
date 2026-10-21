@@ -49,6 +49,22 @@ Each one cleans up after itself in an always-run step, and a timer removes the d
 How it works: each step starts with `source pipelines/scenarios/hooks.sh <phase> <service>`. With no scenario it does nothing. With one, it changes the
 workspace or the environment just before the step runs, and the step then fails the way it would for real.
 
+## Demo branches
+
+Each `demo/*` branch is `main` plus one real, committed defect, so PipeMedic has a real bug to diagnose and a real change to
+propose. Run the service's pipeline on the branch (with no scenario); it fails, and the failure email offers a fix plan.
+
+| Branch | Defect | Pipeline | Fails at | Fix PipeMedic proposes |
+|---|---|---|---|---|
+| `demo/test-failure` | `reserve` returns `STOCK[item] + 1` in `services/inventory/app/main.py` | inventory-ci | Unit tests | Pull request removing the `+ 1` |
+| `demo/lint-error` | Unused `import json` in `services/payments/app/main.py` | payments-ci | Lint | Pull request removing the import |
+| `demo/dependency-missing` | `httpx==9.9.9`, a version that does not exist, in `services/orders/requirements.txt` | orders-ci | Install dependencies | Pull request pinning a version that exists (not yet tried live) |
+| `demo/missing-config` | `services/frontend/config/frontend.prod.json` deleted | frontend-ci | Validate deployment config | Pull request adding the file, with `REPLACE_ME` for values it cannot know |
+| `demo/memory-limit` | The benchmark step's `MemoryMax` cut from 600M to 60M in `pipelines/templates/service-ci.yml` | any | Benchmark (killed) | Pull request raising the limit in the pipeline file |
+
+A fix arrives as a pull request into the demo branch. Abandon it after the demo rather than merging it, so the branch keeps its defect.
+To make a branch in a new setup, branch from `main` and commit the defect from the table.
+
 ## Run it locally
 
 ```bash
