@@ -77,6 +77,25 @@ streamlit run dashboard.py        # pick organization, project and repository; c
 Under **Fix it**, open a plan to see exactly what it will do, then approve it. A pull request and a proving run, or the runner fix and
 a re-run, follow, and an email reports the result.
 
+## Running a demo
+
+`main` in each demo repository is always green and deployable. The defects live on `demo/*` branches, one real committed bug each,
+so a failure can be shown again and again without breaking `main`. A pipeline that shows a green tick is only showing its latest run,
+usually on `main`; its runs on the `demo/*` branches are the failed ones. Nothing is fixed until someone approves a plan.
+
+**Quick (main stays clean).** Run the pipeline on a demo branch: Pipelines → `weather-app` → Run pipeline → Branch `demo/test-failure`,
+scenario `none`. It fails at "Unit tests"; within about a minute PipeMedic emails the cause, and in the dashboard (choose the
+`weather-app` repository, click the pipeline, then the run) the **Fix it** section shows the plan. Approve it: PipeMedic opens a pull
+request into the demo branch and proves it with a run on the fix branch. Abandon that pull request afterwards so the branch keeps its bug.
+
+**The full story (changes main).** Open a pull request from `demo/test-failure` into `main` and complete it, as a developer merging a bug
+would. The `main` pipeline fails at "Unit tests", so nothing is built or deployed and the live app keeps its last good version.
+PipeMedic offers a fix for `main`; approve it, then review and complete its pull request, and `main` is green again. Use a bug that
+fails in the tests (`demo/test-failure`) for this, not one that fails at deploy.
+
+Runner problems need no branch: run the pipeline on `main` with a scenario (`docker-disk-full`, `docker-daemon-down`; for
+`pipemedic-pipes`, `disk-full`, `cpu-starvation` and others). Each one cleans up after itself.
+
 ## How it stays safe
 
 - **Rules decide, AI explains.** The verdict comes from rules. The model's opinion is labelled, and its quotes must appear in the logs.

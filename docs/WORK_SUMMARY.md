@@ -122,6 +122,21 @@ All nine scenarios were run live and each was diagnosed correctly with the right
 | 98 | App listens on 8080, Container Apps sends traffic to 8000 | Pull request back to port 8000. **Approved:** pull request 9 in `weather-app`, proving run 100 passed |
 | 103 | A required setting removed, so the app stops at start-up | Pull request restoring `WEATHER_MODE=live` |
 
+### Using it
+
+- `main` in `weather-app` and `pipemedic-pipes` is always green; each `demo/*` branch holds one real bug. A pipeline's green tick
+  shows only its latest run, usually on `main`; the failures are the runs on the demo branches. None of them was fixed: every bug is
+  still on its branch, and PipeMedic's plans for them wait for approval in the dashboard.
+- Two plans were approved during testing: starting Docker for run 86 (re-run 101 passed) and the port fix for run 98 (pull request 9
+  into `demo/wrong-port`, not merged; abandon it after a demo).
+- To show the whole loop on `main`, merge `demo/test-failure` into `main` with a pull request: the pipeline fails in the tests (nothing
+  is deployed), PipeMedic offers a fix for `main`, and approving and merging it turns `main` green again. The README's "Running a
+  demo" section has both ways step by step.
+- In the dashboard, choose the repository first (`pipemedic-pipes` is selected by default; the weather app is `weather-app`). The first
+  page load takes about 25 seconds while it reads the projects, runs and runner history; clicks after that take a few seconds. After
+  the agent's code changes, restart the dashboard: Streamlit reloads changed modules only partly, and a long-running dashboard then
+  stopped loading run details.
+
 ## Not done yet, and known limits
 
 - Restarting the agent and restarting a VM have tests but have not been run on a live runner.
@@ -131,3 +146,4 @@ All nine scenarios were run live and each was diagnosed correctly with the right
 - The Function App has no Application Insights, so its logs are not kept; the per-run trace table is the record.
 - On run 78 the AI took about 9 minutes, against under a minute before; the run finished correctly.
 - The email service's sending limit can delay or drop emails when many runs fail at once; the dashboard still shows every diagnosis.
+- The pipeline list shows each pipeline's latest run only, so a green `main` can hide failing demo branches.
