@@ -17,6 +17,11 @@ by email within a minute of the failure and on a dashboard. It also watches the 
    Foundry adds a labelled second opinion; its quotes must appear in the real logs.
 4. The person who triggered the run gets an email with the cause, the evidence and what to do. Pool problems (an agent offline,
    a stuck queue, a disk heading for full) are emailed too.
+5. **Fix with approval.** For each failure the agent also prepares fix plans: a pull request with an AI-written change (to the code,
+   or to a pipeline file when the cause is there), or a runner action (clean the disk, stop a runaway job, restart the agent or the
+   VM) followed by a re-run. A person approves one in the dashboard's **Fix it** section or through the signed link in the email;
+   only then does it run. An email reports whether the pipeline passed afterwards. See
+   [docs/fix-with-approval-plan.md](docs/fix-with-approval-plan.md).
 
 `docs/workflow-map.html` draws all of this with the Azure services involved; open it in a browser.
 
@@ -47,19 +52,25 @@ pip install -r requirements.txt
 streamlit run dashboard.py        # pick organization, project and repository; click a pipeline, then a run
 ```
 
+To see a fix, run a pipeline on one of the `demo/*` branches of `pipemedic-pipes` (for example `demo/test-failure`), open the
+failed run in the dashboard, read the plan under **Fix it**, and approve it. A pull request and a proving run follow.
+
 ## How it stays safe
 
 - **Rules decide, AI explains.** The verdict and every action come from rules; the model's opinion is labelled and cannot change them,
   except to refine a generic script failure when its quoted evidence is found in the log.
 - **No keys in the cloud.** The Function App, the runners and the dashboard sign in with managed identities or your `az login`.
-  The only secret, the key runners post health with, is in Key Vault.
+  The key runners post health with is in Key Vault; the key that signs approval links is an app setting of the Function App.
 - **Secrets are removed from logs** before anything is sent to the model.
 - **Guardrailed actions.** On its own the agent may only retry a run once, clean a full runner disk, or open a work item, and only
   when switched on. AI-written fixes become pull requests that a person reviews; nothing is merged automatically.
+- **Nothing is fixed without a person.** Every fix plan needs one explicit approval and expires after 24 hours. Opening an email
+  link only shows the plan; the decision is a button press on that page. Runner actions come from a fixed set of scripts, never
+  from the model, and only stop jobs run by the agent user, never the agent, ssh, system services or deployed apps.
 
 ## Tests
 
 ```bash
-cd agent && python -m pytest tests          # 265 tests
+cd agent && python -m pytest tests          # 297 tests
 python benchmark/compare.py                 # classifier accuracy on the collected failures
 ```
