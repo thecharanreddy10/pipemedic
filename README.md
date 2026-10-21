@@ -54,6 +54,7 @@ Details: [docs/fix-with-approval-plan.md](docs/fix-with-approval-plan.md). What 
 | `benchmark/` | How accurately the rules name the cause, measured on 137 real pipeline failures |
 | `docs/` | The architecture diagram, the fix-with-approval design, and the work summary |
 | `pipemedic-pipes/` | Four small services and realistic pipelines (lint, test, benchmark, package, deploy, smoke test) with ten failure scenarios to demonstrate PipeMedic on |
+| `weather-app/` | A container test bed: a small weather service built with Docker on the runners, pushed to Azure Container Registry and deployed to Azure Container Apps, with nine failure scenarios (its own repository in Azure DevOps; `infra/4_weather_app.sh` creates its Azure side) |
 
 `pipemedic-pipes/` goes into its own Azure DevOps project and repository, and its pipelines run on the same runners; `SETUP.md`
 does this. Its `demo/*` branches, each holding one real defect, are listed in [pipemedic-pipes/README.md](pipemedic-pipes/README.md).
@@ -91,6 +92,6 @@ a re-run, follow, and an email reports the result.
 ## Tests
 
 ```bash
-cd agent && python -m pytest tests          # 297 tests
+cd agent && python -m pytest tests          # 317 tests
 python benchmark/compare.py                 # classifier accuracy on the collected failures
 ```

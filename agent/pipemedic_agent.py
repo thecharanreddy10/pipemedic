@@ -36,11 +36,12 @@ DEFAULT_HEALTH_API = config.settings().health_api
 
 
 class AzureDevOps:
-    def __init__(self, org: str, project: str, pat: str | None = None, credential=None):
+    def __init__(self, org: str, project: str, pat: str | None = None, credential=None, repo: str | None = None):
         """Sign in with a personal access token, or with an Entra credential (a managed identity in Azure)."""
         self.base = f"https://dev.azure.com/{org}"
         self.org = org
         self.project = project
+        self.repo = repo or project  # the repository fixes are read from and proposed to
         self._pat = pat
         self._credential = credential
         if not pat and credential is None:
@@ -78,16 +79,30 @@ class AzureDevOps:
 
     # ---- repository access, used by the AI fix feature ----
     def _repo(self) -> str:
-        return f"{self.base}/{self.project}/_apis/git/repositories/{self.project}"
+        return f"{self.base}/{self.project}/_apis/git/repositories/{self.repo}"
+
+    def with_repo(self, repo: str) -> "AzureDevOps":
+        """The same sign-in, working on another repository of the project."""
+        import copy
+        other = copy.copy(self)
+        other.repo = repo
+        return other
 
     def repo_paths(self, scope: str = "/services", branch: str = "main") -> list[str]:
         items = self._get(f"{self._repo()}/items", scopePath=scope, recursionLevel="full",
                           **{"versionDescriptor.version": branch}).json()["value"]
         return [i["path"].lstrip("/") for i in items if not i.get("isFolder")]
 
-    def read_file(self, path: str, branch: str = "main") -> str:
-        r = self._get(f"{self._repo()}/items", path="/" + path.lstrip("/"), **{"versionDescriptor.version": branch, "$format": "text"})
+    def read_file(self, path: str, branch: str = "main", commit: str | None = None) -> str:
+        version = {"versionDescriptor.version": commit, "versionDescriptor.versionType": "commit"} if commit else {"versionDescriptor.version": branch}
+        r = self._get(f"{self._repo()}/items", path="/" + path.lstrip("/"), **version, **{"$format": "text"})
         return r.text
+
+    def last_passing_commit(self, pipeline_id: int) -> str | None:
+        """The commit the pipeline's most recent successful run built, if it has one."""
+        url = f"{self.base}/{self.project}/_apis/build/builds"
+        runs = self._get(url, definitions=pipeline_id, resultFilter="succeeded", statusFilter="completed", **{"$top": 1}).json()["value"]
+        return runs[0].get("sourceVersion") if runs else None
 
     def branch_head(self, branch: str = "main") -> str:
         refs = self._get(f"{self._repo()}/refs", filter=f"heads/{branch}").json()["value"]
@@ -262,6 +277,7 @@ def collect_failure(ado: AzureDevOps, build: dict, hosts: dict) -> dict:
         "pipeline_id": build["definition"]["id"],
         "source_branch": build.get("sourceBranch"),
         "source_version": build.get("sourceVersion"),
+        "repository": (build.get("repository") or {}).get("name"),
         "requested_for": (build.get("requestedFor") or {}).get("uniqueName"),
         "build_id": build_id,
         "failed_step": step["name"] if step else "unknown step",

@@ -63,7 +63,7 @@ def carry_out(plan: dict, ado, store, credential, pool: str, run_link: str, now:
             proposal = {"changes": plan["changes"], "summary": plan["title"].removeprefix("Open a pull request: "),
                         "explanation": plan.get("explanation", ""), "risk": plan.get("risk", ""), "confidence": plan.get("confidence", "medium"),
                         "problems": []}
-            r = open_fix_pr(ado, None, {**diag, "build_id": bid, "pipeline": plan["pipeline"], "pipeline_id": plan["pipeline_id"],
+            r = open_fix_pr(ado, None, {**diag, "build_id": bid, "pipeline": plan["pipeline"], "pipeline_id": plan["pipeline_id"],  # diag names the repository
                                         "source_branch": plan.get("source_branch")},
                             run_link, store=store, dry_run=False, allow_pipeline=kind == "pipeline-pr", proposal=proposal, now=now)
             if r.get("status") != "opened":
@@ -72,6 +72,10 @@ def carry_out(plan: dict, ado, store, credential, pool: str, run_link: str, now:
         else:
             if kind == "clean-disk":
                 result["disk"] = json.loads(ra.run_script(credential, host, ra.CLEAN_DISK) or "{}")
+            elif kind == "restart-docker":
+                result["docker"] = json.loads(ra.run_script(credential, host, ra.RESTART_DOCKER) or "{}")
+                if not result["docker"].get("ok"):
+                    raise RuntimeError(f"Docker did not start: {result['docker'].get('state')}")
             elif kind == "restart-agent":
                 result["agent"] = json.loads(ra.run_script(credential, host, ra.RESTART_AGENT) or "{}")
                 result["agent_online"] = _agent_online(ado, pool, None, 120)
@@ -119,8 +123,9 @@ def _tell(w, plan: dict) -> str:
         return "not sent"
     who = plan.get("decided_by") or ""
     to = cfg.notify_override_to or (who if _EMAIL.match(who) else cfg.notify_default_to)
+    repo = (plan.get("diagnosis") or {}).get("repository") or cfg.project
     subject, text, body = result_email(plan, run_url(cfg.org, cfg.project, plan["build_id"]),
-                                       f"https://dev.azure.com/{cfg.org}/{cfg.project}/_git/{cfg.project}")
+                                       f"https://dev.azure.com/{cfg.org}/{cfg.project}/_git/{repo}")
     try:
         return str(w.mailer(to, subject, text, body))
     except Exception as e:

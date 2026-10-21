@@ -82,6 +82,8 @@ def result_email(plan: dict, run_link: str, base_url: str) -> tuple[str, str, st
         facts.append(f"Free disk space went from {r['disk'].get('free_mb_before')} MB to {r['disk'].get('free_mb_after')} MB.")
     if r.get("process"):
         facts.append(f"Stopping the process: {r['process'].get('detail')}")
+    if r.get("docker"):
+        facts.append("Docker is running again." if r["docker"].get("ok") else f"Docker is {r['docker'].get('state')}.")
     if "agent_online" in r:
         facts.append("The agent is online again." if r["agent_online"] else "The agent did not come back online in time.")
     if r.get("rerun"):

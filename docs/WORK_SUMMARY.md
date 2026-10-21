@@ -75,8 +75,52 @@ the decision is a button press on that page, so a mail scanner opening the link 
 | Stopping a runaway job | A busy test job on a runner was found and stopped, and nothing was left running |
 | Runs 75 and 78 | Plans waiting for approval, with Approve and Reject in the dashboard |
 
-297 automated tests pass. On 137 real failures from an open-source project, the rules name the cause correctly in 137 and
+317 automated tests pass. On 137 real failures from an open-source project, the rules name the cause correctly in 137 and
 the rules with the AI's refinement in 135.
+
+## Container test bed: the weather app
+
+A second repository in the same project, `weather-app`: a FastAPI service with a page and an API (Open-Meteo data), built as an
+image **with Docker on the self-hosted runners**, pushed to **Azure Container Registry**, and deployed as a new revision of an
+**Azure Container Apps** app, then checked: the revision must become healthy and answer a smoke test. The runners sign in with their
+managed identities (AcrPush on the registry, Contributor on the app, Reader on the environment and its log workspace), so the
+pipeline holds no secrets. `infra/4_weather_app.sh` creates it in a new subscription.
+
+What PipeMedic gained for it:
+
+| Change | Why |
+|---|---|
+| A fix goes to the repository the failed run built, and the files it may change are worked out from that repository | The weather app keeps its code at the root (`app/`, `Dockerfile`), not under `services/` |
+| Rules for Docker not running, a missing base image, registry refusals, read and TLS timeouts, an Azure resource not found, and a Container Apps revision that does not start | Container pipelines fail in these ways |
+| "Resource not found" is checked against Azure with PipeMedic's own read access | Azure gives the same answer for a wrong name and for an identity with no role on the resource |
+| The model sees each file as it was in the pipeline's last passing run, when it differs | Without it, the model guessed values (`python:3.9`, `WEATHER_MODE=mock`, port 8080) instead of restoring what worked |
+| An edit to a file the model was not shown, or one that throws away most of a file, is refused; a small app is shown whole | On one run the model, not shown `app/weather.py`, rewrote it from scratch; the checks had let that through |
+| A runner action that restarts Docker, and Docker clean-up in the disk clean-up | For the Docker-down and full-disk failures |
+| The deploy check prints the port Container Apps uses and the errors a crashed container left in Log Analytics, and fails at once on `ActivationFailed` | A crashed container leaves no replica to read logs from, and the port is set outside the repository |
+
+Problems found while building it:
+
+| Problem | What it caused | Fix |
+|---|---|---|
+| Azure's network drops full-size packets from Docker's bridge network | Every `pip install` inside the image build timed out (run 79) | Docker on the runners uses a 1400-byte MTU; added to the runner bootstrap |
+| `az ... -o tsv` prints each field of a list on its own line | The deploy check never saw the revision as healthy (run 80) | Read the revision's state as JSON with `jq` |
+| The test-failure rule matched pytest's `FAILED ` marker without regard to case | Docker's "failed to resolve reference" was called a failed test (run 87) | The pytest and Go markers are matched in upper case only; the benchmark still scores 137 of 137 |
+| A fix waiting on one branch blocked fixes for the same step on other branches | The missing-setting branch got no fix while the wrong-port fix was open (run 99) | Waiting fixes are compared on the same branch only |
+| The email service limits how many messages a domain sends a minute | A failure email was not sent during heavy testing (run 98) | Up to two short retries when the service says it is busy |
+
+All nine scenarios were run live and each was diagnosed correctly with the right fix offered; two were approved and carried out:
+
+| Run | Scenario | What PipeMedic concluded and offered |
+|---|---|---|
+| 95 | Disk full during the image build | The runner ran out of disk; clean the disk, then re-run |
+| 86 | Docker stopped on the runner | Docker is not running; start it, then re-run. **Approved:** Docker started and re-run 101 passed |
+| 106 | The runners' push role removed | The registry exists but the runner's identity has no role on it; a job for a person |
+| 96 | Wrong temperature formula | Pull request changing `celsius * 5 / 9` back to `celsius * 9 / 5` |
+| 107 | Base image tag that does not exist | Pull request back to `python:3.12-slim` |
+| 108 | Dependency pinned to a release that does not exist | Pull request back to `httpx==0.27.2` |
+| 109 | Wrong registry name in the pipeline | No registry by that name exists; pull request to the pipeline file |
+| 98 | App listens on 8080, Container Apps sends traffic to 8000 | Pull request back to port 8000. **Approved:** pull request 9 in `weather-app`, proving run 100 passed |
+| 103 | A required setting removed, so the app stops at start-up | Pull request restoring `WEATHER_MODE=live` |
 
 ## Not done yet, and known limits
 
@@ -86,3 +130,4 @@ the rules with the AI's refinement in 135.
 - A flaky test is offered a re-run only, not a pull request that quarantines it.
 - The Function App has no Application Insights, so its logs are not kept; the per-run trace table is the record.
 - On run 78 the AI took about 9 minutes, against under a minute before; the run finished correctly.
+- The email service's sending limit can delay or drop emails when many runs fail at once; the dashboard still shows every diagnosis.

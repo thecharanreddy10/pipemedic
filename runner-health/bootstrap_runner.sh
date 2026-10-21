@@ -16,6 +16,14 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get install -y -q python3-venv python3-pip curl jq
 
+echo "== Docker and the Azure CLI (the weather-app pipeline builds its image here and deploys it with the VM's identity)"
+apt-get install -y -q docker.io
+# Azure's network drops full-size packets from containers on Docker's bridge (TLS handshakes to PyPI time out), so use a smaller MTU
+printf '{\n  "mtu": 1400\n}\n' > /etc/docker/daemon.json
+systemctl enable docker && systemctl restart docker
+usermod -aG docker "$USER_NAME"
+command -v az >/dev/null || curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
 echo "== passwordless sudo for the agent user (the pipelines install services and read the journal)"
 echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-pipemedic
 chmod 440 /etc/sudoers.d/90-pipemedic

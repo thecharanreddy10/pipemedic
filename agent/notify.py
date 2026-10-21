@@ -137,11 +137,20 @@ def send_email(endpoint: str, sender: str, to: str, subject: str, text: str, bod
     """Send through Azure Communication Services. Returns the service's status string."""
     from azure.communication.email import EmailClient
 
+    import time
+
+    from azure.core.exceptions import HttpResponseError
+
     client = EmailClient(endpoint, credential)
-    poller = client.begin_send({
-        "senderAddress": sender,
-        "recipients": {"to": [{"address": to}]},
-        "content": {"subject": subject, "plainText": text, "html": body_html},
-    })
+    message = {"senderAddress": sender, "recipients": {"to": [{"address": to}]},
+               "content": {"subject": subject, "plainText": text, "html": body_html}}
+    for attempt in range(3):  # the service limits how many emails a domain sends a minute; a short wait usually clears it
+        try:
+            poller = client.begin_send(message)
+            break
+        except HttpResponseError as e:
+            if e.status_code != 429 or attempt == 2:
+                raise
+            time.sleep(8 * (attempt + 1))
     result = poller.result(timeout=wait_s)
     return str(result.get("status", "unknown"))

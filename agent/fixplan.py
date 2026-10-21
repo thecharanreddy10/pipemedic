@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 PLAN_HOURS = 24
 CODE_CATEGORIES = {"test-failure", "script-failure", "static-analysis", "dependency", "code-error", "configuration"}
 PR_KINDS = {"code-pr", "pipeline-pr"}
-RUNNER_KINDS = {"clean-disk", "restart-agent", "stop-process", "restart-vm"}
+RUNNER_KINDS = {"clean-disk", "restart-docker", "restart-agent", "stop-process", "restart-vm"}
 
 
 def _plan(d, n, kind, title, steps, check, undo, risk, now, **extra):
@@ -55,7 +55,7 @@ def build_plans(d: dict, proposal: dict | None = None, busy_process: dict | None
                 ("Changes a pipeline file. " if pipeline else "") + (proposal.get("risk") or ""),
                 changes=[{**c, "old_content": (proposal.get("old_contents") or {}).get(c["path"], "")} for c in proposal["changes"]],
                 explanation=proposal.get("explanation", ""), confidence=proposal.get("confidence", ""),
-                diagnosis={k: d.get(k) for k in ("category", "verdict", "failed_step", "root_cause")})
+                diagnosis={k: d.get(k) for k in ("category", "verdict", "failed_step", "root_cause", "repository")})
         elif category in CODE_CATEGORIES:
             add("manual", "A person changes the code", [s for s in d.get("suggestions", [])[:3]],
                 "The next run passes.", "Nothing to undo.", "No automatic change.",
@@ -67,6 +67,10 @@ def build_plans(d: dict, proposal: dict | None = None, busy_process: dict | None
                 [f"Delete old job folders, the pip cache and old temporary files on {host}. Tools the agent installed are kept."] + rerun_steps,
                 "Free space goes up and the re-run passes.", "Nothing to undo: only caches and old job output are deleted.",
                 "Low: jobs re-download what they need.")
+        if kind == "docker" or "docker-stopped (runner log)" in flags:
+            add("restart-docker", f"Start Docker on {host}, then re-run",
+                [f"Restart the Docker service on {host} and check it answers."] + rerun_steps,
+                "Docker answers and the re-run passes.", "Nothing to undo.", "Low: no job can build images while Docker is down anyway.")
         if busy_process:
             p = busy_process
             add("stop-process", f"Stop the process using {'the CPU' if float(p.get('cpu', 0)) >= float(p.get('mem', 0)) else 'the memory'} on {host}, then re-run",
@@ -84,7 +88,12 @@ def build_plans(d: dict, proposal: dict | None = None, busy_process: dict | None
             f"{host} reports normal health, its agent is online, and the re-run passes.", "Nothing to undo.",
             "High: the runner is offline for about two minutes and any job on it stops.")
 
-    if verdict == "flaky" or verdict in ("runner", "mixed") or category in ("network", "permissions", "timeout", "unknown"):
+    if category == "permissions":  # a re-run fails the same way; access is for a person to grant, never PipeMedic
+        add("manual", "A person grants the access the step needs",
+            ["Find the identity and the role named in the error.", "Grant the least role that allows the step, then re-run."],
+            "The re-run passes.", "Nothing to undo.", "No automatic change.",
+            reason="PipeMedic does not change who has access to what.")
+    if verdict == "flaky" or verdict in ("runner", "mixed") or category in ("network", "timeout", "unknown"):
         add("rerun", "Re-run without changing anything", rerun_steps, "The re-run passes.", "Nothing to undo.",
             "Low." if verdict == "flaky" else "Low, but the same failure may happen again.")
     return plans

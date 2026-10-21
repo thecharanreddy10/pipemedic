@@ -77,8 +77,11 @@ _GENERIC_EXIT = re.compile(r"exited with code|exit code \d+|Process completed wi
 _NOISE = re.compile(r"^(Starting|Finishing|Generating script|=+|\[command\]|Task\s+:|Description\s+:|Version\s+:|Author\s+:|Help\s+:)", re.IGNORECASE)
 
 
+_ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")  # terminal colour codes (Docker prints its build errors in red)
+
+
 def _clean(line: str) -> str:
-    return _TS_PREFIX.sub("", line).strip()
+    return _ANSI.sub("", _TS_PREFIX.sub("", line)).strip()
 
 
 def _informative_lines(text: str) -> list[str]:
@@ -133,10 +136,12 @@ def _tail_lines(text: str, n: int) -> list[str]:
 
 
 _PERMISSION = (r"Permission denied|AuthorizationFailed|not authorized|access denied|Forbidden|\b403\b|\b401\b|Unauthorized"
-               r"|You need the .{0,40}permission|do(?:es)? not have permission")
+               r"|You need the .{0,40}permission|do(?:es)? not have permission"
+               r"|requested access to the resource is denied|insufficient_scope|unauthorized: authentication required")
 _NETWORK = (r"Connection refused|Could not resolve host|Name or service not known|\bECONNREFUSED\b|\bENOTFOUND\b|Network is unreachable"
             r"|SSL: CERTIFICATE|Connection timed out|Operation timed out|\bETIMEDOUT\b|Temporary failure in name resolution"
-            r"|no such host|Unknown host|UnknownHostException|Unable to load the service index|\bNU1301\b")
+            r"|no such host|Unknown host|UnknownHostException|Unable to load the service index|\bNU1301\b"
+            r"|Read timed out|ReadTimeoutError|handshake operation timed out|TLS handshake timeout")
 
 # A package, image or module that cannot be found or resolved, in the common package managers: pip, npm, apt, docker,
 # maven/gradle, nuget, go, and node packages (a bare package name, not a relative path).
@@ -145,6 +150,7 @@ _DEPENDENCY = (r"No matching distribution|Could not find a version|ResolutionImp
                r"|npm error (?:code )?(?:E404|ETARGET|ERESOLVE)|npm error notarget|npm error 404|No matching version found for"
                r"|Unable to locate package|has no installation candidate"
                r"|failed to resolve source metadata|manifest unknown|repository does not exist"
+               r"|failed to resolve reference \"[^\"]+\": [^\n]*not found|manifest for \S+ not found"
                r"|Could not resolve dependencies|Could not find artifact|Could not resolve all files|Non-resolvable parent POM"
                r"|error NU110[12]|Unable to find package"
                r"|no required module provides package|cannot find module providing package"
@@ -161,8 +167,10 @@ _CODE_ERROR_LINE = re.compile(
 # the step ran, so these lines count as code errors only when no linter or vet was run.
 _GO_DIAGNOSTIC = re.compile(r"^\S+\.go:\d+:\d+: ")
 
-_TEST_FAILURE = (r"^FAILED |AssertionError|\bassert\b.*==|\d+ failed"
-                 r"|^--- FAIL: |^FAIL\s|Tests run:.*(?:Failures|Errors): [1-9]|There are test failures|Failed!\s+- Failed:\s+[1-9]"
+# pytest's "FAILED " and Go's "FAIL" markers are upper case; matched as written, so a line such as Docker's "failed to resolve
+# reference" is not taken for a failed test.
+_TEST_FAILURE = (r"(?-i:^FAILED )|AssertionError|\bassert\b.*==|\d+ failed"
+                 r"|(?-i:^--- FAIL: )|(?-i:^FAIL\s)|Tests run:.*(?:Failures|Errors): [1-9]|There are test failures|Failed!\s+- Failed:\s+[1-9]"
                  r"|ERROR at setup of|fixture '[^']+' not found|^ERROR tests?/|\b\d+ errors? in [\d.]+s")
 
 # Output of linters, formatters and type checkers (ruff, mypy, flake8, black, pylint, eslint, tsc).
@@ -188,8 +196,23 @@ def _static_analysis_lines(text: str) -> list[str]:
 _KILLED = r"|line \d+: +\d+ +Killed|exited with code '137'|exit code 137|Cannot allocate memory|Out of memory"
 
 
+_DOCKER_DOWN = r"Cannot connect to the Docker daemon|Is the docker daemon running"
+
+# A new revision of a container app that never became healthy (printed by the deploy step, followed by the app's own logs).
+_REVISION_FAILED = r"Revision \S+ did not start|Revision \S+ was not healthy"
+_REVISION_EVIDENCE = (r"Revision \S+ (?:did not start|was not healthy)|Error|Exception|Traceback|must be|port|probe|refused|crash"
+                      r"|exit(?:ed)? (?:with )?code|Back-?off|failed")
+
+# An Azure resource the pipeline names does not exist: almost always a wrong name in the pipeline or its variables.
+_AZURE_NOT_FOUND = (r"The resource with name '[^']+' and type '[^']+' could not be found|\bResourceNotFound\b"
+                    r"|ResourceGroupNotFound|could not be found in subscription")
+
+
 def _runner_kind(blob: str) -> str:
-    """What kind of runner problem it is: the disk is full, a process was killed for lack of memory, or a tool is missing."""
+    """What kind of runner problem it is: the disk is full, a process was killed for lack of memory, Docker is not running,
+    or a tool is missing."""
+    if re.search(_DOCKER_DOWN, blob, re.IGNORECASE):
+        return "docker"
     if re.search(r"No space left on device", blob, re.IGNORECASE):
         return "disk"
     if re.search(_KILLED.lstrip("|"), blob, re.IGNORECASE):
@@ -220,9 +243,25 @@ def classify(failure: dict) -> dict:
             "evidence": ([issues.strip()] if issues.strip() else []) + waiting,
         }
 
+    if re.search(_REVISION_FAILED, blob, re.IGNORECASE):
+        return {
+            "category": "configuration",
+            "kind": "deployment",
+            "summary": f"'{step}' deployed a new revision of the container app, but the revision did not start.",
+            "evidence": [ln for ln in _lines_matching(log, _REVISION_EVIDENCE, 12) if not ln.startswith("---")][-4:],
+        }
+
+    if re.search(_AZURE_NOT_FOUND, blob, re.IGNORECASE):
+        return {
+            "category": "configuration",
+            "kind": "azure-resource",
+            "summary": f"'{step}' names an Azure resource that does not exist.",
+            "evidence": _lines_matching(log, _AZURE_NOT_FOUND, 3),
+        }
+
     if re.search(
         r"ensurepip is not available|python3[\.\d]*-venv|command not found|exited with code '127'"
-        r"|No space left on device|externally-managed-environment" + _KILLED,
+        r"|No space left on device|externally-managed-environment|" + _DOCKER_DOWN + _KILLED,
         blob,
         re.IGNORECASE,
     ):
@@ -232,7 +271,7 @@ def classify(failure: dict) -> dict:
             "summary": f"'{step}' failed because the runner is missing a tool or resource the job needs.",
             "evidence": _lines_matching(
                 log,
-                r"ensurepip|venv|command not found|No space left|externally-managed" + _KILLED + r"|exited with code '137'",
+                r"ensurepip|venv|command not found|No space left|externally-managed|" + _DOCKER_DOWN + _KILLED + r"|exited with code '137'",
                 4,
             ) or [issues.strip()],
         }
@@ -312,6 +351,35 @@ def classify(failure: dict) -> dict:
     }
 
 
+_AZURE_NAMED = re.compile(r"The resource with name '([^']+)' and type '([^']+)'", re.IGNORECASE)
+
+
+def azure_resource_named(d: dict) -> tuple[str, str] | None:
+    """The (name, type) of the Azure resource a "could not be found" failure names, if it names one."""
+    if d.get("kind") != "azure-resource":
+        return None
+    m = next((m for m in (_AZURE_NAMED.search(e) for e in d.get("evidence", [])) if m), None)
+    return (m.group(1), m.group(2)) if m else None
+
+
+def confirm_azure_resource(d: dict, exists: bool | None) -> dict:
+    """Azure answers "not found" both for a wrong name and for a resource the caller has no role on. When the resource does
+    exist, the cause is access: the job's identity cannot see it."""
+    named = azure_resource_named(d)
+    if not named or exists is None:
+        return d
+    name, rtype = named
+    if not exists:
+        return {**d, "root_cause": f"The pipeline names {rtype.split('/')[-1].rstrip('s')} '{name}', and no resource by that name exists: "
+                                   "a wrong name in the pipeline file or its variables.", "resource_checked": "missing"}
+    return {**d, "category": "permissions", "kind": "no-role", "resource_checked": "exists",
+            "root_cause": (f"'{name}' exists, but the identity the job runs as has no role on it, so Azure answers as if it did not "
+                           "exist. This is an access problem, not a wrong name."),
+            "suggestions": [f"Give the job's identity the role it needs on '{name}' (for a container registry: AcrPush to push images).",
+                            "Check whether a role assignment was removed recently (the resource's Access control (IAM) page lists them).",
+                            "Re-run once the role is in place."]}
+
+
 def correlate(diagnosis: dict, health: dict, hostname: str | None) -> dict:
     """Combine the classification with runner health to decide where the fault lies."""
     flags = health.get("flags", [])
@@ -337,6 +405,28 @@ def correlate(diagnosis: dict, health: dict, hostname: str | None) -> dict:
             "Clear old job folders and caches on the runner (the agent's _work folder, the pip cache), or enlarge the disk.",
             "Add a disk check at the start of the pipeline so a full disk is reported before work begins.",
             "Re-run once there is free space.",
+        ]
+    elif category == "runner-environment" and diagnosis.get("kind") == "docker":
+        verdict = "runner"
+        root = f"Docker is not running on {host}, so the image could not be built. This is a runner problem, not a code change."
+        fixes = [
+            "Start Docker on the runner (sudo systemctl start docker) and check why it stopped in its journal.",
+            "Re-run once Docker is running.",
+        ]
+    elif category == "configuration" and diagnosis.get("kind") == "deployment":
+        verdict = "code-or-config"
+        root = ("The image was built and deployed, but the new revision of the container app did not start. The app's own logs above "
+                "show why: usually the port it listens on, a setting it needs at start-up, or an error in the code that runs first.")
+        fixes = [
+            "Read the container log in the evidence: it names the setting, port or error that stopped the app.",
+            "Make the Dockerfile and the container app agree: the port the app listens on and the settings it requires.",
+            "The previous revision keeps serving traffic until a healthy one replaces it.",
+        ]
+    elif category == "configuration" and diagnosis.get("kind") == "azure-resource":
+        verdict = "code-or-config"
+        root = "The pipeline names an Azure resource that does not exist: a wrong name in the pipeline file or its variables."
+        fixes = [
+            "Compare the name in the error with the real resource in the Azure portal, and correct it in the pipeline.",
         ]
     elif category == "runner-environment":
         verdict, root = "runner", f"{host} is missing something the job needs. This is an environment problem, not a code change."
@@ -475,6 +565,8 @@ def diagnose(failure: dict, health_records: list[dict], runner_logs: dict | None
         "hostname": hostname,
         "pipeline_id": failure.get("pipeline_id"),
         "source_branch": failure.get("source_branch"),
+        "repository": failure.get("repository"),
+        "source_version": failure.get("source_version"),
         "requested_for": failure.get("requested_for"),
         "failed_step": failure.get("failed_step"),
         "category": base["category"],

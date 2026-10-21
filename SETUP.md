@@ -24,10 +24,11 @@ cp infra/setup.env.example infra/setup.env    # then edit it: names, region, org
 
 | Step | Command | What it does |
 |---|---|---|
-| 1. Azure | `bash infra/1_azure.sh` | Resource group, storage account, Key Vault, Function App (Linux Consumption, Python 3.11) with its own identity, AI Services with the two models (keys disabled), email (Communication Services with an Azure-managed sender), the identity's five roles, your own roles, and every app setting |
+| 1. Azure | `bash infra/1_azure.sh` | Resource group, storage account, Key Vault, Function App (Linux Consumption, Python 3.11) with its own identity, AI Services with the two models (keys disabled), email (Communication Services with an Azure-managed sender), the identity's six roles, your own roles, and every app setting |
 | 2. Code | `python health-api/deploy.py --app <FUNCTION_APP> --group <RG> --subscription <SUBSCRIPTION> --store-key-in <KEY_VAULT>` | Packages and deploys the agent, waits until the new version answers, and saves the Function key in Key Vault for the runners |
 | 3. Azure DevOps | `python infra/2_devops.py` | Agent pool, the project and its repository filled from `pipemedic-pipes/`, the four pipelines and their permission to use the pool, the Function App's identity as a project Contributor, and the two service hooks |
-| 4. Runners | `export AZDO_PAT=<token>` then `bash infra/3_runners.sh` | The runner VMs (Ubuntu 24.04), each with Key Vault access, the health report every minute, the Azure DevOps agent as a service, passwordless sudo for the pipelines, and an optional daily shutdown |
+| 4. Runners | `export AZDO_PAT=<token>` then `bash infra/3_runners.sh` | The runner VMs (Ubuntu 24.04), each with Key Vault access, the health report every minute, the Azure DevOps agent as a service, passwordless sudo for the pipelines, Docker (with a 1400-byte MTU, which Azure's network needs) and the Azure CLI, and an optional daily shutdown |
+| 5. Container test bed (optional) | `bash infra/4_weather_app.sh`, then push the weather app to a `weather-app` repository in the project and create a pipeline from its `pipelines/weather-app.yml` | Azure Container Registry, a Container Apps environment with the `weather-app` app, and the roles that let the runners build, push and deploy with their own identities. Set `ACR` in `infra/setup.env` first, and `ACR_NAME` in the pipeline if your registry name differs |
 
 ## Check it works
 
@@ -37,6 +38,8 @@ cp infra/setup.env.example infra/setup.env    # then edit it: names, region, org
 4. Run `inventory-ci` with the scenario `none`: it passes and deploys the service to a runner.
 5. Run it again with the scenario `disk-full`: within a minute of the failure an email arrives saying the runner ran out of disk space.
 6. The dashboard on your laptop: set the variables `1_azure.sh` prints at the end, then `cd agent && streamlit run dashboard.py`.
+7. With step 5: run `weather-app` on `main`; it builds the image on a runner, pushes it, deploys it, and the app answers at its
+   Container Apps address. Then run it on a `demo/*` branch, or with a scenario, to see a container failure explained.
 
 ## What it costs and how to stop it
 
@@ -46,5 +49,5 @@ or keep `AUTO_SHUTDOWN_TIME` set. To remove everything: `az group delete -n <RG>
 ## Limits
 
 - The scripts were checked with dry runs against the current setup; they have not been run end to end in an empty subscription yet.
-- PipeMedic watches one Azure DevOps project (`ADO_PROJECT`).
+- PipeMedic watches one Azure DevOps project (`ADO_PROJECT`), and every repository in it: a fix goes to the repository the failed run built.
 - `FIX_MODE=open` lets the agent open pull requests with AI-written fixes (never merged automatically); `propose` only describes them.

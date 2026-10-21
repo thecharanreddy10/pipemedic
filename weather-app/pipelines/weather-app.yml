@@ -1,0 +1,117 @@
+# Weather app: test, build the image on the runner with Docker, push it to Azure Container Registry, deploy it to
+# Azure Container Apps, and check the new revision answers. Runs on pipemedic-pool. Azure sign-in uses the runner VM's
+# managed identity (AcrPush on the registry, Contributor on the container app), so the pipeline holds no secrets.
+trigger:
+  branches:
+    include: [main]
+
+parameters:
+  - name: scenario
+    displayName: Failure scenario (runner problems; code defects live on the demo/* branches)
+    type: string
+    default: none
+    values: [none, docker-disk-full, docker-daemon-down]
+
+variables:
+  ACR_NAME: pipemedicweather
+  IMAGE: weather-app
+  APP_NAME: weather-app
+  RESOURCE_GROUP: pipemedic-rg
+  SCENARIO: ${{ parameters.scenario }}
+  AZURE_CONFIG_DIR: $(Agent.TempDirectory)/azure   # each job signs in separately, even when two run on one VM
+
+stages:
+  - stage: Test
+    displayName: Lint and test
+    jobs:
+      - job: Test
+        displayName: Lint and unit tests
+        timeoutInMinutes: 15
+        pool:
+          name: pipemedic-pool
+        steps:
+          - checkout: self
+            displayName: Get the code
+          - bash: |
+              set -euo pipefail
+              python3 -m venv .venv
+              . .venv/bin/activate
+              pip install --disable-pip-version-check -r requirements.txt -r requirements-dev.txt
+            displayName: Install dependencies
+          - bash: |
+              set -euo pipefail
+              . .venv/bin/activate
+              ruff check .
+            displayName: Lint
+          - bash: |
+              set -euo pipefail
+              . .venv/bin/activate
+              python -m pytest --junitxml="$BUILD_ARTIFACTSTAGINGDIRECTORY/junit-weather.xml"
+            displayName: Unit tests
+          - task: PublishTestResults@2
+            displayName: Publish test results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFiles: $(Build.ArtifactStagingDirectory)/junit-weather.xml
+              testRunTitle: weather-app
+
+  - stage: Build
+    displayName: Build and push the image
+    dependsOn: Test
+    jobs:
+      - job: Image
+        displayName: Build and push
+        timeoutInMinutes: 20
+        pool:
+          name: pipemedic-pool
+        steps:
+          - checkout: self
+            displayName: Get the code
+          - bash: |
+              set -euo pipefail
+              source pipelines/scenarios/hooks.sh build
+              docker build ${DOCKER_BUILD_OPTS:-} --pull --build-arg APP_VERSION="$(Build.BuildId)" \
+                -t "$(ACR_NAME).azurecr.io/$(IMAGE):$(Build.BuildId)" .
+            displayName: Build the image
+          - bash: |
+              set -euo pipefail
+              az login --identity --output none
+              az acr login --name "$(ACR_NAME)"
+            displayName: Sign in to the registry
+          - bash: |
+              set -euo pipefail
+              docker push "$(ACR_NAME).azurecr.io/$(IMAGE):$(Build.BuildId)"
+            displayName: Push the image
+          - bash: bash pipelines/scenarios/cleanup.sh
+            displayName: Clean up the runner
+            condition: always()
+
+  - stage: Deploy
+    displayName: Deploy to Container Apps
+    dependsOn: Build
+    jobs:
+      - job: Deploy
+        displayName: Deploy and smoke test
+        timeoutInMinutes: 15
+        pool:
+          name: pipemedic-pool
+        steps:
+          - checkout: self
+            displayName: Get the code
+          - bash: |
+              set -euo pipefail
+              az login --identity --output none
+              az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+              az containerapp update -n "$(APP_NAME)" -g "$(RESOURCE_GROUP)" \
+                --image "$(ACR_NAME).azurecr.io/$(IMAGE):$(Build.BuildId)" --revision-suffix "b$(Build.BuildId)" --output none
+              echo "Deployed revision $(APP_NAME)--b$(Build.BuildId)"
+            displayName: Deploy the new revision
+          - bash: |
+              set -euo pipefail
+              bash pipelines/scripts/wait_for_revision.sh "$(APP_NAME)" "$(RESOURCE_GROUP)" "$(APP_NAME)--b$(Build.BuildId)"
+            displayName: Wait for the revision to be healthy
+          - bash: |
+              set -euo pipefail
+              fqdn=$(az containerapp show -n "$(APP_NAME)" -g "$(RESOURCE_GROUP)" --query properties.configuration.ingress.fqdn -o tsv)
+              bash pipelines/scripts/smoke_test.sh "https://$fqdn" "$(Build.BuildId)"
+            displayName: Smoke test

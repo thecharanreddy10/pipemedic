@@ -36,6 +36,9 @@ RULES = [
     ("agent-lost (runner log)", ("agent-service", "agent-worker-log"),
      r"lost communication|could not connect|connection (was )?(reset|refused|timed out)|shutdown signal|has been shut down|disconnect",
      "The Azure DevOps agent lost contact with Azure DevOps or was shut down."),
+    ("docker-stopped (runner log)", ("docker",), r"stopping docker\.service|stopped docker\.service|docker\.service: (?:failed|main process exited)"
+     r"|stopped docker application container engine",
+     "Docker was stopped on the runner."),
     ("agent-service-failed (runner log)", ("agent-service", "journal-warnings"),
      r"vsts\.agent[^\n]*(failed|exited|stopped)|main process exited",
      "The agent service failed or stopped."),
@@ -56,6 +59,8 @@ sec kernel
 journalctl --utc -k --since "$START" --until "$END" --no-pager -q 2>/dev/null | grep -iE 'out of memory|oom|killed process|no space|i/o error|blocked for more than|segfault' | cut -c1-220 | tail -n 8
 sec agent-service
 journalctl --utc -u 'vsts.agent*' --since "$START" --until "$END" --no-pager -q 2>/dev/null | grep -iE 'error|fail|exception|lost|cancel|timeout|disconnect|shutdown' | cut -c1-220 | tail -n 15
+sec docker
+journalctl --utc -u docker.service -u docker.socket --since "$START" --until "$END" --no-pager -q 2>/dev/null | grep -iE 'stop|start|fail|error' | cut -c1-220 | tail -n 8
 sec agent-worker-log
 for f in $(ls -t {AGENT_DIAG}/Worker_*.log 2>/dev/null | head -3); do
   if [ "$(date -u -r "$f" +%s)" -ge "$(date -u -d "$START" +%s)" ]; then grep -hiE 'error|exception|fail|killed|cancel' "$f" | cut -c1-220 | tail -n 8; fi

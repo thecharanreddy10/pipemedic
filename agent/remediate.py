@@ -141,6 +141,20 @@ CLEAN_SCRIPT = (
 )
 
 
+def arm_resource_exists(subscription: str, name: str, rtype: str, credential, timeout_s: int = 30) -> bool:
+    """Whether a resource of this name and type exists among those PipeMedic's identity can read (it has Reader on the
+    resource group)."""
+    import requests
+
+    from azure_auth import ARM_SCOPE
+    url = f"https://management.azure.com/subscriptions/{subscription}/resources"
+    flt = f"name eq '{name.replace(chr(39), '')}' and resourceType eq '{rtype.replace(chr(39), '')}'"
+    r = requests.get(url, params={"$filter": flt, "api-version": "2021-04-01"}, timeout=timeout_s,
+                     headers={"Authorization": "Bearer " + credential.get_token(ARM_SCOPE).token})
+    r.raise_for_status()
+    return bool(r.json().get("value"))
+
+
 def arm_run_command(subscription: str, rg: str, vm: str, script: str, credential, timeout_s: int = 240) -> str:
     """Run a shell script on a VM through the Azure Resource Manager run-command API and return its output."""
     import requests

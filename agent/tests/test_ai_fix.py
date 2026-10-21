@@ -139,7 +139,7 @@ class FakeAdo:
 
     def repo_paths(self, scope="/services", branch="main"):  # a read, not an action: kept apart from calls
         self.reads.append((scope, branch))
-        return [p for p in TREE if p.startswith(scope.lstrip("/") + "/")]
+        return [p for p in TREE if scope == "/" or p.startswith(scope.lstrip("/") + "/")]
     def read_file(self, p, branch="main"): return FILES.get(p, "# file\n")
     def create_branch_with_commit(self, branch, changes, message, base="main"): self.calls.append(("branch", branch, len(changes), base)); return "c1"
     def create_pull_request(self, source, title, desc, target="main"): self.calls.append(("pr", source, target)); return 77
@@ -252,7 +252,7 @@ def test_a_fix_is_made_on_the_runs_branch_and_proposed_back_into_it():
     ado, store = FakeAdo(), FakeStore()
     r = open_fix_pr(ado, FakeLLM(proposal(change())), d(source_branch="refs/heads/demo/test-failure"), "link", store=store, dry_run=False)
     assert r["status"] == "opened" and r["base"] == "demo/test-failure"
-    assert ("/services", "demo/test-failure") in ado.reads
+    assert ("/", "demo/test-failure") in ado.reads
     branch_call = next(c for c in ado.calls if c[0] == "branch")
     pr_call = next(c for c in ado.calls if c[0] == "pr")
     assert branch_call[3] == "demo/test-failure" and pr_call[2] == "demo/test-failure"
@@ -284,3 +284,28 @@ def test_an_approved_proposal_is_opened_as_it_is_without_asking_the_model_again(
     approved = {**proposal(change()), "problems": []}
     r = open_fix_pr(ado, llm, d(), "link", store=FakeStore(), dry_run=False, proposal=approved)
     assert r["status"] == "opened" and llm.calls == [] and ado.reads == []
+
+
+def test_the_model_sees_each_file_as_it_was_in_the_last_passing_run_when_it_differs():
+    class Ado(FakeAdo):
+        def last_passing_commit(self, pipeline_id):
+            return "good123"
+
+        def read_file(self, p, branch="main", commit=None):
+            if commit == "good123" and p == "services/inventory/app/main.py":
+                return OLD_MAIN.replace("STOCK[item] + 1", "STOCK[item]")
+            return FILES.get(p, "# file\n")
+
+    llm = FakeLLM(proposal(change()))
+    r = open_fix_pr(Ado(), llm, d(), "link", dry_run=True)
+    prompt = llm.calls[0][1]["content"]
+    assert "=== services/inventory/app/main.py (as it was in the last passing run) ===" in prompt
+    assert r["proposal"]["compared_with_passing"] == ["services/inventory/app/main.py"]  # unchanged files are not repeated
+
+
+def test_a_fix_waiting_on_another_branch_does_not_block_this_branch():
+    other = {**_open(1, ["services/inventory/app/main.py"]), "base": "demo/other"}
+    r = open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=FakeStore([other]), dry_run=True)
+    assert r["status"] == "proposed"
+    same = {**_open(1, ["services/inventory/app/main.py"]), "base": "main"}
+    assert open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=FakeStore([same]), dry_run=True)["status"] == "skipped"

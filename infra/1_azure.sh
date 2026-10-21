@@ -67,6 +67,7 @@ role "$FUNC_ID" "Key Vault Secrets User" "$(ask keyvault show -n "$KEY_VAULT" -g
 role "$FUNC_ID" "Cognitive Services OpenAI User" "$AI_RID"
 role "$FUNC_ID" "Communication and Email Service Owner" "$(ask communication show -n "$COMM_SERVICE" -g "$RG" --query id -o tsv)"
 role "$FUNC_ID" "Virtual Machine Contributor" "/subscriptions/$SUB_ID/resourceGroups/$RG"   # reads the runners' logs
+role "$FUNC_ID" "Reader" "/subscriptions/$SUB_ID/resourceGroups/$RG"                         # checks whether a resource a failed run names exists
 
 echo "== your own access (so the dashboard and the next steps work with your az login)"
 ME=$(ask ad signed-in-user show --query id -o tsv)

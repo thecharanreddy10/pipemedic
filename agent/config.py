@@ -90,4 +90,4 @@ def is_test_path(path: str, markers: list[str] | None = None) -> bool:
 
 def under_code_root(path: str, roots: list[str] | None = None) -> bool:
     roots = roots or settings().code_roots
-    return any(path == r or path.startswith(r + "/") for r in roots)
+    return any(r == "" or path == r or path.startswith(r + "/") for r in roots)  # "" is the whole repository

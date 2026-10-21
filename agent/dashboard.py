@@ -199,12 +199,15 @@ def fix_section(org, project, bid):
             if r:
                 facts = []
                 if r.get("pr_id"):
-                    facts.append(f"[Pull request {r['pr_id']}](https://dev.azure.com/{org}/{project}/_git/{project}/pullrequest/{r['pr_id']}) "
+                    repo = (p.get("diagnosis") or {}).get("repository") or project
+                    facts.append(f"[Pull request {r['pr_id']}](https://dev.azure.com/{org}/{project}/_git/{repo}/pullrequest/{r['pr_id']}) "
                                  f"into {r.get('base')}; proving run {r.get('proving_run')}")
                 if r.get("disk"):
                     facts.append(f"Free disk went from {r['disk'].get('free_mb_before')} MB to {r['disk'].get('free_mb_after')} MB")
                 if r.get("process"):
                     facts.append(f"Stopping the process: {r['process'].get('detail')}")
+                if r.get("docker"):
+                    facts.append("Docker is running again" if r["docker"].get("ok") else f"Docker is {r['docker'].get('state')}")
                 if r.get("rerun"):
                     facts.append(f"[Re-run {r['rerun']}](https://dev.azure.com/{org}/{project}/_build/results?buildId={r['rerun']})")
                 if r.get("error"):

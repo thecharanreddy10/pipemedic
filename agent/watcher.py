@@ -32,7 +32,7 @@ import remediate
 import runner_actions
 from ai_diagnose import ai_diagnose
 from ai_fix import check_fix_verifications, open_fix_pr
-from diagnose import apply_ai, diagnose, summarize_health
+from diagnose import apply_ai, azure_resource_named, confirm_azure_resource, diagnose, summarize_health
 from flaky import assess as assess_flaky
 from notify import recipient_for, render_email, render_pool_email, run_url
 from pipemedic_agent import collect_failure, fetch_health
@@ -118,12 +118,13 @@ class Config:
 
 class Watcher:
     def __init__(self, cfg: Config, ado, store, health_fetch=fetch_health, llm=None, mailer=None,
-                 collect=collect_failure, now=None, runner_log_fetch=None, process_fetch=None):
+                 collect=collect_failure, now=None, runner_log_fetch=None, process_fetch=None, resource_check=None):
         self.cfg, self.ado, self.store = cfg, ado, store
         self._env_override = cfg.notify_override_to
         self.health_fetch, self.llm, self.mailer, self.collect = health_fetch, llm, mailer, collect
         self.runner_log_fetch = runner_log_fetch  # (hostname, start, finish) -> runner_logs.collect() result
         self.process_fetch = process_fetch  # hostname -> the runner's busiest processes (runner_actions.top_processes)
+        self.resource_check = resource_check  # (name, type) -> whether that Azure resource exists, as PipeMedic can see
         self._now = now or (lambda: datetime.now(timezone.utc))
         self.hosts: dict = {}
         self.recent: list[dict] = []
@@ -359,6 +360,13 @@ class Watcher:
                 d["ai"] = {"error": str(e)[:200]}
             d = apply_ai(d, d.get("ai"))
 
+        named = azure_resource_named(d)
+        if named and self.resource_check is not None:
+            try:  # "not found" is also what Azure says to an identity with no role on the resource; look for it ourselves
+                d = confirm_azure_resource(d, run_with_timeout(lambda: self.resource_check(*named), EMAIL_TIMEOUT_S))
+            except Exception:
+                log.exception("could not check whether %s exists", named[0])
+
         vec = None
         if cfg.memory_on and self.llm is not None:
             self._stage(bid, "checking similar failures")
@@ -406,10 +414,13 @@ class Watcher:
         except Exception as e:
             return {"status": "error", "detail": str(e)[:200]}, None
         p = r.get("proposal") or {}
-        return {"status": r["status"], "detail": r.get("detail", ""), "pr_id": r.get("pr_id"), "verify_build": r.get("verify_build"),
+        summary = {"status": r["status"], "detail": r.get("detail", ""), "pr_id": r.get("pr_id"), "verify_build": r.get("verify_build"),
                 "summary": p.get("summary", ""), "confidence": p.get("confidence", ""),
                 "files": [f"{c['action']} {c['path']}" for c in p.get("changes", [])],
-                "pr_url": f"https://dev.azure.com/{self.cfg.org}/{self.cfg.project}/_git/{self.cfg.project}/pullrequest/{r['pr_id']}" if r.get("pr_id") else ""},             (p if r["status"] == "proposed" else {"detail": r.get("detail", ""), "problems": p.get("problems", [])})  # only a clean proposal can become a plan
+                "pr_url": (f"https://dev.azure.com/{self.cfg.org}/{self.cfg.project}/_git/{d.get('repository') or self.cfg.project}"
+                           f"/pullrequest/{r['pr_id']}" if r.get("pr_id") else "")}
+        # only a clean proposal can become a plan
+        return summary, (p if r["status"] == "proposed" else {"detail": r.get("detail", ""), "problems": p.get("problems", [])})
 
     BUSY_FLAGS = {"high-cpu", "high-memory", "out-of-memory (runner log)", "overloaded (runner log)"}
 
@@ -475,6 +486,7 @@ def build_watcher() -> Watcher:
     from store import TableStore
 
     cfg = Config.from_env()
+    cfg_base = config.settings()
     cred = get_credential()
     store = TableStore(cfg.state_url, cred)
     remediate.configure_store(store)
@@ -486,7 +498,8 @@ def build_watcher() -> Watcher:
     return Watcher(cfg, AzureDevOps(cfg.org, cfg.project, credential=cred), store,
                    llm=FoundryLLM() if cfg.ai_on else None, mailer=mailer,
                    runner_log_fetch=lambda host, start, finish: runner_logs.collect(cred, host, start, finish),
-                   process_fetch=lambda host: runner_actions.top_processes(cred, host))
+                   process_fetch=lambda host: runner_actions.top_processes(cred, host),
+                   resource_check=lambda name, rtype: remediate.arm_resource_exists(cfg_base.subscription_id, name, rtype, cred))
 
 
 def run_once() -> dict:

@@ -48,7 +48,9 @@ SYSTEM = (
     "make a failure go away: if a required file is missing, CREATE it with minimal valid content instead of making the "
     "script tolerate its absence. In any file you create, use the obvious placeholder REPLACE_ME for anything "
     "environment-specific you cannot know (host names, addresses, ports of real systems, credentials, ids); never invent "
-    "realistic-looking production values. Keep the explanation short and concrete."
+    "realistic-looking production values. When a file is also shown as it was in the pipeline's last passing run, the difference "
+    "between the two versions is the most likely cause: prefer restoring what worked over inventing a new value. "
+    "Keep the explanation short and concrete."
 )
 
 
@@ -63,8 +65,20 @@ def run_branch(d: dict) -> str:
     return ref or config.settings().branch
 
 
-def roots(allow_pipeline: bool = False) -> list[str]:
-    return config.settings().code_roots + ([PIPELINE_ROOT] if allow_pipeline else [])
+def roots(allow_pipeline: bool = False, code_roots: list[str] | None = None) -> list[str]:
+    base = config.settings().code_roots if code_roots is None else code_roots
+    return base + ([PIPELINE_ROOT] if allow_pipeline and "" not in base else [])
+
+
+def repo_code_roots(all_paths: list[str]) -> list[str]:
+    """The configured code roots this repository has; a repository with none of them (an app at its root, such as a
+    Dockerfile and app/) is code as a whole. Tests and pipeline files stay protected by their own rules."""
+    present = [r for r in config.settings().code_roots if any(p == r or p.startswith(r + "/") for p in all_paths)]
+    return present or [""]
+
+
+def _roots_text(rs: list[str]) -> str:
+    return ", ".join(r or "(the whole repository)" for r in rs)
 
 
 def is_pipeline_file(path: str) -> bool:
@@ -93,12 +107,18 @@ def pick_context(tree_paths: list[str], log: str, limit: int = MAX_CONTEXT_FILES
         if any(path == n or path.endswith("/" + n) for n in named):
             chosen.append(path)
             parts = path.split("/")
-            if len(parts) >= 2:
+            if len(parts) >= 3:  # services/<name>/...: the service the log points at
                 services.add("/".join(parts[:2]))
     for path in tree_paths:  # the service's own source and scripts (not tests) give the model the code under test
         if any(path.startswith(s + "/") for s in services) and path not in chosen and not _is_test_path(path) \
                 and path.endswith((".py", ".sh", ".json", ".js", ".ts")) and "/__pycache__/" not in path:
             chosen.append(path)
+    source = [p for p in tree_paths if p.endswith(".py") and not _is_test_path(p) and "/__pycache__/" not in p and not is_pipeline_file(p)]
+    # an app that is not split into services (its code at the repository root) is shown whole when small; otherwise its own code
+    if not services and (len(source) <= limit or not any(p in source for p in chosen)):
+        chosen += [p for p in source if p not in chosen and not p.endswith("__init__.py")][:limit]
+    if re.search(r"docker|container|image|revision", log or "", re.IGNORECASE):  # how the image is built and started
+        chosen = [p for p in tree_paths if p.split("/")[-1] in ("Dockerfile", "requirements.txt")] + [p for p in chosen if p.split("/")[-1] not in ("Dockerfile", "requirements.txt")]
     if allow_pipeline:  # the pipeline's own definitions, so a setting there can be seen and changed
         chosen = chosen[:limit] + [p for p in tree_paths if p.startswith(PIPELINE_ROOT + "/") and p.endswith((".yml", ".yaml")) and p not in chosen]
         return chosen[:limit + 4]
@@ -112,8 +132,17 @@ def _guard_count(text: str) -> int:
     return len(_GUARDS.findall(text or ""))
 
 
-def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | None = None, allow_pipeline: bool = False) -> list[str]:
-    """Return the list of reasons the proposal must be rejected (empty means acceptable)."""
+def _lines_kept(old: str, new: str) -> float:
+    """The share of an existing file's lines that the new content keeps."""
+    old_lines = [ln.strip() for ln in old.splitlines() if ln.strip()]
+    new_lines = {ln.strip() for ln in new.splitlines()}
+    return sum(ln in new_lines for ln in old_lines) / len(old_lines) if old_lines else 1.0
+
+
+def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | None = None, allow_pipeline: bool = False,
+             code_roots: list[str] | None = None, shown: set[str] | None = None) -> list[str]:
+    """Return the list of reasons the proposal must be rejected (empty means acceptable). `shown` is the set of files the model
+    was given in full: an edit to any other file would be written blind."""
     old_contents = old_contents or {}
     problems = []
     changes = proposal.get("changes", [])
@@ -127,8 +156,8 @@ def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | 
         if path in seen:
             problems.append(f"{path} appears twice")
         seen.add(path)
-        if ".." in path.split("/") or path.startswith("/") or not config.under_code_root(path, roots(allow_pipeline)):
-            problems.append(f"{path} is outside the code roots ({', '.join(roots(allow_pipeline))})")
+        if ".." in path.split("/") or path.startswith("/") or not config.under_code_root(path, roots(allow_pipeline, code_roots)):
+            problems.append(f"{path} is outside the code roots ({_roots_text(roots(allow_pipeline, code_roots))})")
         if _is_test_path(path):
             problems.append(f"{path} is a test file; fixes must change the code, not the tests")
         if is_pipeline_file(path) and not allow_pipeline:
@@ -137,6 +166,11 @@ def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | 
             problems.append(f"{path} does not exist, so it cannot be edited")
         if action == "create" and path in existing:
             problems.append(f"{path} already exists, so it cannot be created")
+        if action == "edit" and shown is not None and path not in shown:
+            problems.append(f"{path} was not shown to the model, so its change would be written without seeing the file")
+        if action == "edit" and path in old_contents and len(old_contents[path].splitlines()) >= 10 \
+                and _lines_kept(old_contents[path], content) < 0.5:
+            problems.append(f"{path} would be mostly rewritten; a fix must change only what is broken")
         if action == "edit" and path in old_contents and _guard_count(content) < _guard_count(old_contents[path]):
             problems.append(f"{path} removes error handling or checks (exit, raise, assert); fixes must not weaken checks")
         if len(content) > MAX_FILE_CHARS:
@@ -153,8 +187,10 @@ def validate(proposal: dict, existing: set[str], old_contents: dict[str, str] | 
     return problems
 
 
-def propose_fix(llm, d: dict, tree_paths: list[str], read_file, allow_pipeline: bool = False) -> dict:
-    """Ask the model for a fix. `read_file(path)` returns a file's text. Returns the proposal plus `problems`."""
+def propose_fix(llm, d: dict, tree_paths: list[str], read_file, allow_pipeline: bool = False, code_roots: list[str] | None = None,
+                read_passing=None) -> dict:
+    """Ask the model for a fix. `read_file(path)` returns a file's text; `read_passing(path)`, when given, returns it as it was in
+    the pipeline's last passing run. Returns the proposal plus `problems`."""
     log = d.get("log_excerpt", "")
     context_paths = pick_context(tree_paths, log, allow_pipeline=allow_pipeline)
     files = []
@@ -163,13 +199,22 @@ def propose_fix(llm, d: dict, tree_paths: list[str], read_file, allow_pipeline: 
             files.append((p, read_file(p)[:MAX_FILE_CHARS]))
         except Exception:
             continue
+    passing = []  # the same files as they were when the pipeline last passed, where they differ
+    for p, c in files if read_passing else []:
+        try:
+            before = read_passing(p)[:MAX_FILE_CHARS]
+        except Exception:
+            continue
+        if before is not None and before != c:
+            passing.append((p, before))
     listing = "\n".join(sorted(tree_paths)[:150])
     ai = d.get("ai") if d.get("ai") and not d["ai"].get("error") else None
     user = (f"Failing pipeline: {d['pipeline']} (run {d['build_id']}), step: {d['failed_step']}\n"
             f"Rules say: {d['category']}, {d['root_cause']}\n"
             + (f"AI analysis: {ai['likely_cause']}\n" if ai else "")
-            + f"\nLog excerpt:\n---\n{redact(log)}\n---\n\nRepository files under {', '.join(roots(allow_pipeline))}:\n{listing}\n\n"
-            + "\n\n".join(f"=== {p} ===\n{redact(c)}" for p, c in files))
+            + f"\nLog excerpt:\n---\n{redact(log)}\n---\n\nRepository files under {_roots_text(roots(allow_pipeline, code_roots))}:\n{listing}\n\n"
+            + "\n\n".join(f"=== {p} ===\n{redact(c)}" for p, c in files)
+            + "".join(f"\n\n=== {p} (as it was in the last passing run) ===\n{redact(c)}" for p, c in passing))
     msg = llm.chat([{"role": "system", "content": system_prompt(allow_pipeline)}, {"role": "user", "content": user}],
                    json_schema=SCHEMA, max_tokens=8000)
     proposal = json.loads(msg.get("content") or "{}")
@@ -181,8 +226,9 @@ def propose_fix(llm, d: dict, tree_paths: list[str], read_file, allow_pipeline: 
                 old[c["path"]] = shown.get(c["path"]) or read_file(c["path"])
             except Exception:
                 pass
-    proposal["problems"] = validate(proposal, set(tree_paths), old, allow_pipeline)
+    proposal["problems"] = validate(proposal, set(tree_paths), old, allow_pipeline, code_roots, shown=set(shown))
     proposal["context_files"] = context_paths
+    proposal["compared_with_passing"] = [p for p, _ in passing]
     proposal["old_contents"] = old  # so a person approving the change can see exactly what it replaces
     return proposal
 
@@ -221,14 +267,18 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
     if not eligible(d):
         return {"status": "skipped", "detail": "not a failure a code change can fix"}
     now = now or datetime.now(timezone.utc)
+    base = run_branch(d)
     if store is not None:
         fixes = store.fixes()
-        waiting = [f for f in fixes if f["pipeline"] == d["pipeline"] and f["status"] == "open"]
+        # Fixes waiting for review on the same branch: a fix on another branch is for a different copy of the code.
+        # Older records did not note their branch; they were made on the default branch.
+        waiting = [f for f in fixes if f["pipeline"] == d["pipeline"] and f["status"] == "open"
+                   and f.get("base", config.settings().branch) == base]
         signature = f"{d.get('category')}|{d.get('failed_step')}"
         if any(f.get("signature") == signature for f in waiting):
             return {"status": "skipped", "detail": "a fix for this same failure is already waiting for review"}
         if len(waiting) >= MAX_OPEN_PER_PIPELINE:
-            return {"status": "skipped", "detail": f"{len(waiting)} fixes for this pipeline are already waiting for review"}
+            return {"status": "skipped", "detail": f"{len(waiting)} fixes for this pipeline and branch are already waiting for review"}
         # Older records did not note which files they touch: treat those as touching everything, as before.
         busy_files = set()
         for f in waiting:
@@ -241,10 +291,20 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
         if not dry_run and proposal is None and len(recent) >= MAX_PRS_PER_DAY:
             return {"status": "skipped", "detail": f"already opened {MAX_PRS_PER_DAY} fixes in the last day"}
 
-    base = run_branch(d)
+    if d.get("repository") and hasattr(ado, "with_repo"):  # the repository the failed run built
+        ado = ado.with_repo(d["repository"])
     if proposal is None:
-        tree = [p for r in roots(allow_pipeline) for p in ado.repo_paths(scope="/" + r, branch=base)]
-        proposal = propose_fix(llm, d, tree, lambda p: ado.read_file(p, branch=base), allow_pipeline)
+        all_paths = ado.repo_paths(scope="/", branch=base)
+        code_roots = repo_code_roots(all_paths)
+        tree = [p for p in all_paths if config.under_code_root(p, roots(allow_pipeline, code_roots))]
+        good = None
+        if hasattr(ado, "last_passing_commit") and d.get("pipeline_id"):
+            try:
+                good = ado.last_passing_commit(d["pipeline_id"])
+            except Exception:
+                good = None
+        read_passing = (lambda p: ado.read_file(p, commit=good)) if good and good != d.get("source_version") else None
+        proposal = propose_fix(llm, d, tree, lambda p: ado.read_file(p, branch=base), allow_pipeline, code_roots, read_passing)
     if proposal["problems"]:
         return {"status": "rejected", "detail": "; ".join(proposal["problems"]), "proposal": proposal}
     if proposal["confidence"] == "low":

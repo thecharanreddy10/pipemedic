@@ -20,6 +20,7 @@ find /home/azureuser/azagent/_work -mindepth 1 -maxdepth 1 -type d ! -name _tool
 rm -rf /home/azureuser/.cache/pip /root/.cache/pip
 rm -f /var/tmp/pm_fill
 find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -exec rm -rf {} + 2>/dev/null
+if command -v docker >/dev/null && systemctl is-active --quiet docker; then docker system prune -af >/dev/null 2>&1; fi
 after=$(df -BM --output=avail / | tail -1 | tr -dc '0-9')
 echo "{\"free_mb_before\": $before, \"free_mb_after\": $after}"
 """
@@ -31,6 +32,13 @@ if [ -z "$unit" ]; then echo '{"ok": false, "detail": "no agent service found"}'
 systemctl restart "$unit"
 sleep 8
 echo "{\"ok\": true, \"unit\": \"$unit\", \"state\": \"$(systemctl is-active "$unit")\"}"
+"""
+
+RESTART_DOCKER = r"""
+set -u
+systemctl restart docker.socket docker.service
+sleep 3
+if docker info >/dev/null 2>&1; then echo '{"ok": true, "state": "running"}'; else echo "{\"ok\": false, \"state\": \"$(systemctl is-active docker)\"}"; fi
 """
 
 # Read-only: the processes using the most CPU and memory, as JSON lines.
