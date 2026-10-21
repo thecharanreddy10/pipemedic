@@ -175,6 +175,10 @@ def test_daily_cap():
     now = datetime.now(timezone.utc).isoformat()
     store = FakeStore([{"pipeline": f"p{i}", "status": "completed", "build_id": i, "time": now} for i in range(3)])
     assert open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=store, dry_run=False)["status"] == "skipped"
+    # a draft for a person to approve, and a plan a person approved, are not held back by it
+    assert open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=store, dry_run=True)["status"] == "proposed"
+    approved = {**proposal(change()), "problems": []}
+    assert open_fix_pr(FakeAdo(), None, d(), "link", store=store, dry_run=False, proposal=approved)["status"] == "opened"
 
 
 def test_low_confidence_and_bad_proposals_open_nothing():

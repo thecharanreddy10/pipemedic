@@ -140,7 +140,7 @@ def execute(build_id: int, plan_id: str) -> dict:
     r = carry_out(plan, w.ado, w.store, get_credential(), w.cfg.pool, run_url(w.cfg.org, w.cfg.project, build_id))
     plan = w.store.get_plan(build_id, plan_id)
     if plan.get("status") == "failed":
-        _tell(w, plan)
+        plan = w.store.update_plan(build_id, plan_id, result_email=_tell(w, plan)[:200])
     w.store.trace(build_id, f"fix {plan_id} ({plan.get('kind')}): {plan.get('status')}")
     return {k: v for k, v in r.items() if k != "plan"}
 
@@ -152,5 +152,7 @@ def verify_pending(w=None) -> list[str]:
         w = build_watcher()
     told = []
     for plan in check_results(w.ado, w.store):
-        told.append(f"{plan['plan_id']} {plan['verified']}: email {_tell(w, plan)}")
+        status = _tell(w, plan)
+        w.store.update_plan(plan["build_id"], plan["plan_id"], result_email=status[:200])  # so it can be checked later
+        told.append(f"{plan['plan_id']} {plan['verified']}: email {status}")
     return told

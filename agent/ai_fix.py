@@ -235,8 +235,10 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
             if f.get("files") is None:
                 return {"status": "skipped", "detail": "an earlier fix for this pipeline is waiting for review and its files are unknown"}
             busy_files |= set(f["files"])
+        # The daily limit is for pull requests opened with nobody asking. A draft waits for a person, and an approved
+        # plan has been asked for, so neither is held back by it.
         recent = [f for f in fixes if datetime.fromisoformat(f["time"]) > now - timedelta(days=1)]
-        if len(recent) >= MAX_PRS_PER_DAY:
+        if not dry_run and proposal is None and len(recent) >= MAX_PRS_PER_DAY:
             return {"status": "skipped", "detail": f"already opened {MAX_PRS_PER_DAY} fixes in the last day"}
 
     base = run_branch(d)

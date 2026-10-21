@@ -345,3 +345,18 @@ def test_approving_one_plan_withdraws_the_other_options_for_that_run():
     assert fix_executor.decide(store, 70, "70-1", True, "a@example.com", "dashboard", now=NOW)[0]
     assert {p["plan_id"]: p["status"] for p in store.plans.values()} == {"70-1": "approved", "70-2": "superseded", "70-3": "superseded"}
     assert "superseded" in fixplan.is_runnable(store.plans["70-2"], NOW)
+
+
+def test_the_result_email_status_is_kept_on_the_plan():
+    from types import SimpleNamespace
+    plan = {**fixplan.build_plans(diag(verdict="flaky"), now=NOW)[0], "status": "done", "verified": "pending",
+            "result": {"rerun": 501}, "decided_by": "dev@example.com"}
+    store, ado = FakeStore([plan]), FakeAdo()
+    ado.builds[501] = {"status": "completed", "result": "succeeded"}
+    sent = []
+    cfg = SimpleNamespace(notify_on=True, notify_default_to="owner@example.com", notify_override_to="", org="o", project="p")
+    w = SimpleNamespace(cfg=cfg, ado=ado, store=store, mailer=lambda to, s, t, h: sent.append((to, s)) or "Succeeded")
+    told = fix_executor.verify_pending(w)
+    assert sent[0][0] == "dev@example.com" and sent[0][1].endswith("worked")
+    assert store.plans["70-1"]["result_email"] == "Succeeded" and "passed" in told[0]
+    assert fix_executor.verify_pending(w) == []  # reported once
