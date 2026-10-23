@@ -170,8 +170,8 @@ class FakeAdo:
         self.queued, self.branches, self.prs = [], [], []
         self.builds = {}
 
-    def queue_run(self, pipeline_id, ref):
-        self.queued.append((pipeline_id, ref))
+    def queue_run(self, pipeline_id, ref, parameters=None):
+        self.queued.append((pipeline_id, ref)); self.params = getattr(self, "params", []) + [parameters]
         return 500 + len(self.queued)
 
     def create_branch_with_commit(self, branch, changes, message, base="main"):

@@ -191,9 +191,12 @@ class AzureDevOps:
         except (requests.RequestException, KeyError, IndexError):
             return None
 
-    def queue_run(self, pipeline_id: int, ref: str) -> int:
+    def queue_run(self, pipeline_id: int, ref: str, parameters: dict | None = None) -> int:
+        """Run a pipeline on a branch, optionally with values for its runtime parameters."""
         url = f"{self.base}/{self.project}/_apis/pipelines/{pipeline_id}/runs"
         body = {"resources": {"repositories": {"self": {"refName": ref}}}}
+        if parameters:
+            body["templateParameters"] = parameters
         r = requests.post(url, headers=self.headers, params={"api-version": "7.1"}, json=body, timeout=30)
         r.raise_for_status()
         return r.json()["id"]

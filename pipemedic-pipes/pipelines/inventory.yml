@@ -35,6 +35,10 @@ parameters:
       - memory-hog
       - cpu-starvation
       - disk-full
+  - name: deploy
+    displayName: Deploy after the build (main and demo/* branches only)
+    type: boolean
+    default: true
 
 stages:
   - template: templates/service-ci.yml
@@ -42,3 +46,4 @@ stages:
       service: inventory
       port: 8003
       scenario: ${{ parameters.scenario }}
+      deploy: ${{ parameters.deploy }}

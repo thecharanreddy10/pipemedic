@@ -107,6 +107,7 @@ Problems found while building it:
 | The test-failure rule matched pytest's `FAILED ` marker without regard to case | Docker's "failed to resolve reference" was called a failed test (run 87) | The pytest and Go markers are matched in upper case only; the benchmark still scores 137 of 137 |
 | A fix waiting on one branch blocked fixes for the same step on other branches | The missing-setting branch got no fix while the wrong-port fix was open (run 99) | Waiting fixes are compared on the same branch only |
 | The email service limits how many messages a domain sends a minute | A failure email was not sent during heavy testing (run 98) | Up to two short retries when the service says it is busy |
+| The proving run on a fix branch ran the whole pipeline, deploy included | An AI-written change reached the live app before anyone reviewed it (run 100 served the fix branch's build) | The proving run is queued with `deploy` off and tests and builds only; Deploy runs only on `main` and `demo/*`. Production changes when a person merges the pull request |
 
 All nine scenarios were run live and each was diagnosed correctly with the right fix offered; two were approved and carried out:
 

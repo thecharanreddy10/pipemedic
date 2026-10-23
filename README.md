@@ -23,14 +23,15 @@ one is carried out only after a person approves it.
 5. The diagnosis and the fix plans are saved, and the person who triggered the run gets an email with the cause, the evidence, and a
    signed link to each plan.
 6. A person approves one plan, in the dashboard's **Fix it** section or on the page behind the email link.
-7. The approved plan runs from a queue: a pull request and a proving run on its branch, or a runner action, then a re-run.
+7. The approved plan runs from a queue: a pull request and a proving run on its branch (lint, tests and build, never a deploy), or a
+   runner action, then a re-run. Code reaches the environment only when a person merges the pull request and `main` deploys.
 8. Every minute the timer checks the re-run and emails whether the pipeline passed.
 
 ## Fix with approval
 
 | Failure | Plan offered | After approval |
 |---|---|---|
-| Failing test, lint error, bad dependency pin, missing file, code error | A pull request with the AI's change, shown as a diff | Pull request into the failed run's branch and a proving run. Never merged automatically. |
+| Failing test, lint error, bad dependency pin, missing file, code error | A pull request with the AI's change, shown as a diff | Pull request into the failed run's branch and a proving run that tests and builds it without deploying. Never merged automatically; it deploys when merged. |
 | The cause is in a pipeline file (for example a step memory limit) | A pull request changing that file, marked as a pipeline change | As above |
 | Disk full | Clean old job folders, caches and temp files | Clean-up on the VM, then a re-run |
 | A runaway job using the CPU or memory | Stop that named job | Stopped, then a re-run |
@@ -101,6 +102,8 @@ Runner problems need no branch: run the pipeline on `main` with a scenario (`doc
 - **Rules decide, AI explains.** The verdict comes from rules. The model's opinion is labelled, and its quotes must appear in the logs.
 - **Nothing is fixed without a person.** Every fix plan needs one explicit approval and expires after 24 hours. Opening an email link
   only shows the plan; the decision is a button press on that page. A plan is decided once, even if two people press at the same time.
+- **Unreviewed code is never deployed.** The proving run on a fix branch tests and builds the change with deployment switched off;
+  only `main` (and the `demo/*` branches, which exist to show deploy failures) deploy.
 - **The model never runs anything.** It only writes changes, and those go into a pull request that a person reviews and merges.
   Runner actions come from a fixed set of scripts, and only stop jobs run by the agent user, never the agent, ssh, system services or
   deployed apps.

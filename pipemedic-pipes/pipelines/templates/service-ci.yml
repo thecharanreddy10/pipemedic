@@ -8,6 +8,9 @@ parameters:
   - name: scenario
     type: string
     default: none
+  - name: deploy
+    type: boolean
+    default: true
 
 stages:
   - stage: Validate
@@ -120,7 +123,9 @@ stages:
   - stage: Deploy
     displayName: Deploy to the runner
     dependsOn: Package
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    # Only main and the demo branches deploy. A run with deploy switched off (PipeMedic's proving run on a fix branch) and
+    # pull-request builds stop after the build: an unreviewed change never reaches the environment.
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.deploy }}', 'True'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/demo/')))
     jobs:
       - job: Deploy
         displayName: Deploy and smoke test

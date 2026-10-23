@@ -11,6 +11,10 @@ parameters:
     type: string
     default: none
     values: [none, docker-disk-full, docker-daemon-down]
+  - name: deploy
+    displayName: Deploy after the build (main and demo/* branches only)
+    type: boolean
+    default: true
 
 variables:
   ACR_NAME: pipemedicweather
@@ -89,6 +93,9 @@ stages:
   - stage: Deploy
     displayName: Deploy to Container Apps
     dependsOn: Build
+    # Only main and the demo branches deploy. A run with deploy switched off (PipeMedic's proving run on a fix branch) and
+    # pull-request builds stop after the build: an unreviewed change never reaches the environment.
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.deploy }}', 'True'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/demo/')))
     jobs:
       - job: Deploy
         displayName: Deploy and smoke test

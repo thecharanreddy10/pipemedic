@@ -143,7 +143,7 @@ class FakeAdo:
     def read_file(self, p, branch="main"): return FILES.get(p, "# file\n")
     def create_branch_with_commit(self, branch, changes, message, base="main"): self.calls.append(("branch", branch, len(changes), base)); return "c1"
     def create_pull_request(self, source, title, desc, target="main"): self.calls.append(("pr", source, target)); return 77
-    def queue_run(self, pid, ref): self.calls.append(("queue", pid, ref)); return 500
+    def queue_run(self, pid, ref, parameters=None): self.calls.append(("queue", pid, ref)); self.queue_params = parameters; return 500
     def comment_on_pull_request(self, pr, text): self.calls.append(("comment", pr, text))
     def pull_request(self, pr): return {"status": self.pr_status}
     def build(self, i): return self.build_state
@@ -309,3 +309,29 @@ def test_a_fix_waiting_on_another_branch_does_not_block_this_branch():
     assert r["status"] == "proposed"
     same = {**_open(1, ["services/inventory/app/main.py"]), "base": "main"}
     assert open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=FakeStore([same]), dry_run=True)["status"] == "skipped"
+
+
+def test_the_proving_run_tests_and_builds_the_fix_but_does_not_deploy_it():
+    ado = FakeAdo()
+    r = open_fix_pr(ado, FakeLLM(proposal(change())), d(), "link", dry_run=False)
+    assert r["status"] == "opened" and ado.queue_params == {"deploy": "false"}
+    assert any(c[0] == "comment" and "without deploying" in c[2] for c in ado.calls)
+    assert "Nothing is deployed until this pull request is merged" in pr_text(d(), proposal(change()), "link")[1]
+
+
+def test_a_pipeline_without_a_deploy_setting_is_proved_with_a_normal_run():
+    import requests
+
+    from ai_fix import queue_proving_run
+
+    class Ado:
+        def __init__(self): self.calls = []
+
+        def queue_run(self, pid, ref, parameters=None):
+            self.calls.append(parameters)
+            if parameters:
+                resp = requests.Response(); resp.status_code = 400
+                raise requests.HTTPError("Unexpected parameter 'deploy'", response=resp)
+            return 501
+    ado = Ado()
+    assert queue_proving_run(ado, 4, "refs/heads/pipemedic/fix-run-13") == 501 and ado.calls == [{"deploy": "false"}, None]

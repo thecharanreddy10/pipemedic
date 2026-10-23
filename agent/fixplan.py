@@ -50,8 +50,9 @@ def build_plans(d: dict, proposal: dict | None = None, busy_process: dict | None
                 f"Open a pull request: {proposal.get('summary', 'fix the failure')}",
                 [f"Make a branch from {_branch(d)} and commit the change to {', '.join(files)}.",
                  f"Open a pull request into {_branch(d)} for a person to review. It is never merged automatically.",
-                 f"Run {d.get('pipeline')} on the new branch to prove the change works, and post the result on the pull request."],
-                "The pipeline passes on the fix branch.", "Abandon the pull request; nothing changes until someone merges it.",
+                 f"Run {d.get('pipeline')} on the new branch with deployment switched off (lint, tests, build) to prove the change, "
+                 "and post the result on the pull request. Nothing is deployed until the pull request is merged."],
+                "The pipeline passes on the fix branch, without deploying.", "Abandon the pull request; nothing changes until someone merges it.",
                 ("Changes a pipeline file. " if pipeline else "") + (proposal.get("risk") or ""),
                 changes=[{**c, "old_content": (proposal.get("old_contents") or {}).get(c["path"], "")} for c in proposal["changes"]],
                 explanation=proposal.get("explanation", ""), confidence=proposal.get("confidence", ""),

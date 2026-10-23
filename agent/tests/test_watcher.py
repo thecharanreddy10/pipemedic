@@ -33,7 +33,7 @@ class FakeAdo:
 
     def recent_builds(self, n): return self.builds
     def agent_hosts(self, pool): return {"a1": "vm1"}
-    def queue_run(self, pid, ref): self.queued.append(pid); return 900 + len(self.queued)
+    def queue_run(self, pid, ref, parameters=None): self.queued.append(pid); return 900 + len(self.queued)
     def agent_busy(self, pool, name): return False
     def create_work_item(self, *a, **k): return 1
 
