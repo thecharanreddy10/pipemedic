@@ -155,14 +155,13 @@ def test_dry_run_changes_nothing():
     assert r["status"] == "proposed" and ado.calls == []
 
 
-def test_opening_creates_branch_pr_and_reruns_the_pipeline_on_it():
+def test_opening_creates_branch_and_pr_and_starts_no_pipeline_run():
     ado, store = FakeAdo(), FakeStore()
     r = open_fix_pr(ado, FakeLLM(proposal(change())), d(), "link", store=store, dry_run=False)
-    assert r["status"] == "opened" and r["pr_id"] == 77
-    kinds = [c[0] for c in ado.calls]
-    assert kinds == ["branch", "pr", "queue", "comment"]
-    assert ado.calls[2][2] == "refs/heads/pipemedic/fix-run-13"
-    assert store.fixes()[0]["status"] == "open" and store.fixes()[0]["verified"] == "pending"
+    assert r["status"] == "opened" and r["pr_id"] == 77 and r["verify_build"] is None
+    assert [c[0] for c in ado.calls] == ["branch", "pr", "comment"]  # no "queue": nothing runs until the PR is completed
+    assert "When this pull request is completed" in ado.calls[2][2]
+    assert store.fixes()[0]["status"] == "open" and store.fixes()[0]["verified"] == "after-merge"
 
 
 def test_only_one_open_fix_per_pipeline():
@@ -311,27 +310,8 @@ def test_a_fix_waiting_on_another_branch_does_not_block_this_branch():
     assert open_fix_pr(FakeAdo(), FakeLLM(proposal(change())), d(), "link", store=FakeStore([same]), dry_run=True)["status"] == "skipped"
 
 
-def test_the_proving_run_tests_and_builds_the_fix_but_does_not_deploy_it():
-    ado = FakeAdo()
-    r = open_fix_pr(ado, FakeLLM(proposal(change())), d(), "link", dry_run=False)
-    assert r["status"] == "opened" and ado.queue_params == {"deploy": "false"}
-    assert any(c[0] == "comment" and "without deploying" in c[2] for c in ado.calls)
-    assert "Nothing is deployed until this pull request is merged" in pr_text(d(), proposal(change()), "link")[1]
-
-
-def test_a_pipeline_without_a_deploy_setting_is_proved_with_a_normal_run():
-    import requests
-
-    from ai_fix import queue_proving_run
-
-    class Ado:
-        def __init__(self): self.calls = []
-
-        def queue_run(self, pid, ref, parameters=None):
-            self.calls.append(parameters)
-            if parameters:
-                resp = requests.Response(); resp.status_code = 400
-                raise requests.HTTPError("Unexpected parameter 'deploy'", response=resp)
-            return 501
-    ado = Ado()
-    assert queue_proving_run(ado, 4, "refs/heads/pipemedic/fix-run-13") == 501 and ado.calls == [{"deploy": "false"}, None]
+def test_the_pr_says_no_pipeline_runs_and_lists_the_other_problems_it_does_not_fix():
+    body = pr_text({**d(), "other_problems_text": ["Dockerfile line 1: the base image python:3.99-slim does not exist on Docker Hub"]},
+                   proposal(change()), "link")[1]
+    assert "No pipeline runs on this branch" in body
+    assert "which this pull request does not fix" in body and "python:3.99-slim" in body

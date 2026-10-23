@@ -75,7 +75,7 @@ the decision is a button press on that page, so a mail scanner opening the link 
 | Stopping a runaway job | A busy test job on a runner was found and stopped, and nothing was left running |
 | Runs 75 and 78 | Plans waiting for approval, with Approve and Reject in the dashboard |
 
-317 automated tests pass. On 137 real failures from an open-source project, the rules name the cause correctly in 137 and
+331 automated tests pass. On 137 real failures from an open-source project, the rules name the cause correctly in 137 and
 the rules with the AI's refinement in 135.
 
 ## Container test bed: the weather app
@@ -107,7 +107,7 @@ Problems found while building it:
 | The test-failure rule matched pytest's `FAILED ` marker without regard to case | Docker's "failed to resolve reference" was called a failed test (run 87) | The pytest and Go markers are matched in upper case only; the benchmark still scores 137 of 137 |
 | A fix waiting on one branch blocked fixes for the same step on other branches | The missing-setting branch got no fix while the wrong-port fix was open (run 99) | Waiting fixes are compared on the same branch only |
 | The email service limits how many messages a domain sends a minute | A failure email was not sent during heavy testing (run 98) | Up to two short retries when the service says it is busy |
-| The proving run on a fix branch ran the whole pipeline, deploy included | An AI-written change reached the live app before anyone reviewed it (run 100 served the fix branch's build) | The proving run is queued with `deploy` off and tests and builds only; Deploy runs only on `main` and `demo/*`. Production changes when a person merges the pull request |
+| The proving run on a fix branch ran the whole pipeline, deploy included | An AI-written change reached the live app before anyone reviewed it (run 100 served the fix branch's build) | A fix pull request now starts no run at all. When a person completes it, the pipeline runs on the target branch (PipeMedic starts it if the branch has no trigger) and that run is reported. Pipelines also deploy only from `main` and `demo/*` |
 
 All nine scenarios were run live and each was diagnosed correctly with the right fix offered; two were approved and carried out:
 
@@ -122,6 +122,23 @@ All nine scenarios were run live and each was diagnosed correctly with the right
 | 109 | Wrong registry name in the pipeline | No registry by that name exists; pull request to the pipeline file |
 | 98 | App listens on 8080, Container Apps sends traffic to 8000 | Pull request back to port 8000. **Approved:** pull request 9 in `weather-app`, proving run 100 passed |
 | 103 | A required setting removed, so the app stops at start-up | Pull request restoring `WEATHER_MODE=live` |
+
+### Fixing one problem, seeing all of them
+
+A pipeline stops at its first error. PipeMedic now also lists the steps that never ran, and checks the files the failed commit changed
+since the pipeline last passed for problems those steps would hit: a pinned package version missing from PyPI, a base image tag missing
+from Docker Hub, a container registry that does not exist in Azure, a Python or JSON file that does not parse. Each finding names the
+file and line; a check that cannot get an answer reports nothing rather than guess. The fix plan still deals only with the first failure,
+and its pull request lists the other problems it does not fix.
+
+Checked live on `demo/several-bugs` in `weather-app`, a branch with three bugs:
+
+| Step | What happened |
+|---|---|
+| Run 121 | Failed at "Unit tests". PipeMedic fixed only the formula, and listed the other two: `Dockerfile` line 1, `python:3.99-slim` does not exist on Docker Hub; `pipelines/weather-app.yml` line 20, no registry named `pipemedicweathr`. Build and deploy were listed as not run |
+| Approve | Pull request 12 opened; no pipeline run started |
+| Pull request completed | About three and a half minutes later PipeMedic started run 122 on the branch, which has no trigger of its own |
+| Run 122 | The tests passed, then the run stopped at the base image, the problem PipeMedic had predicted. The plan's outcome: the fix worked, the pipeline now stops at a later problem. Run 122's own diagnosis lists the registry name as the remaining problem |
 
 ### Using it
 

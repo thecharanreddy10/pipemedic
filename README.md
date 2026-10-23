@@ -20,18 +20,22 @@ one is carried out only after a person approves it.
    agent logs from those minutes.
 4. Rules decide the verdict: **code or configuration**, **the runner**, **both**, or **a flaky test**. A model in Azure AI Foundry adds a
    labelled second opinion; every quote it gives must appear in the real logs. The model also drafts a fix where one applies.
+   A pipeline stops at its first error, so PipeMedic also lists the steps that never ran and checks what the commit changed for
+   problems those steps would hit (a package version or base image that does not exist, a registry that does not exist, a file
+   that does not parse). The fix deals only with the first failure; the others are listed with the diagnosis.
 5. The diagnosis and the fix plans are saved, and the person who triggered the run gets an email with the cause, the evidence, and a
    signed link to each plan.
 6. A person approves one plan, in the dashboard's **Fix it** section or on the page behind the email link.
-7. The approved plan runs from a queue: a pull request and a proving run on its branch (lint, tests and build, never a deploy), or a
-   runner action, then a re-run. Code reaches the environment only when a person merges the pull request and `main` deploys.
+7. The approved plan runs from a queue: a pull request into the failed run's branch, on which nothing runs, or a runner action
+   and then a re-run. When a person completes the pull request, the pipeline runs on that branch (PipeMedic starts it if nothing
+   else does) and its result is reported.
 8. Every minute the timer checks the re-run and emails whether the pipeline passed.
 
 ## Fix with approval
 
 | Failure | Plan offered | After approval |
 |---|---|---|
-| Failing test, lint error, bad dependency pin, missing file, code error | A pull request with the AI's change, shown as a diff | Pull request into the failed run's branch and a proving run that tests and builds it without deploying. Never merged automatically; it deploys when merged. |
+| Failing test, lint error, bad dependency pin, missing file, code error | A pull request with the AI's change, shown as a diff | Pull request into the failed run's branch. No pipeline runs on it; when a person completes it, the pipeline runs on that branch and the result is reported. Never merged automatically. |
 | The cause is in a pipeline file (for example a step memory limit) | A pull request changing that file, marked as a pipeline change | As above |
 | Disk full | Clean old job folders, caches and temp files | Clean-up on the VM, then a re-run |
 | A runaway job using the CPU or memory | Stop that named job | Stopped, then a re-run |
@@ -75,7 +79,7 @@ pip install -r requirements.txt
 streamlit run dashboard.py        # pick organization, project and repository; click a pipeline, then the failed run
 ```
 
-Under **Fix it**, open a plan to see exactly what it will do, then approve it. A pull request and a proving run, or the runner fix and
+Under **Fix it**, open a plan to see exactly what it will do, then approve it. A pull request (which runs nothing until completed), or the runner fix and
 a re-run, follow, and an email reports the result.
 
 ## Running a demo
@@ -102,8 +106,8 @@ Runner problems need no branch: run the pipeline on `main` with a scenario (`doc
 - **Rules decide, AI explains.** The verdict comes from rules. The model's opinion is labelled, and its quotes must appear in the logs.
 - **Nothing is fixed without a person.** Every fix plan needs one explicit approval and expires after 24 hours. Opening an email link
   only shows the plan; the decision is a button press on that page. A plan is decided once, even if two people press at the same time.
-- **Unreviewed code is never deployed.** The proving run on a fix branch tests and builds the change with deployment switched off;
-  only `main` (and the `demo/*` branches, which exist to show deploy failures) deploy.
+- **Nothing runs on an unreviewed change.** A fix pull request starts no pipeline run; the pipeline runs only after a person
+  completes it. Pipelines deploy only from `main` and the `demo/*` branches, which exist to show deploy failures.
 - **The model never runs anything.** It only writes changes, and those go into a pull request that a person reviews and merges.
   Runner actions come from a fixed set of scripts, and only stop jobs run by the agent user, never the agent, ssh, system services or
   deployed apps.
@@ -114,6 +118,6 @@ Runner problems need no branch: run the pipeline on `main` with a scenario (`doc
 ## Tests
 
 ```bash
-cd agent && python -m pytest tests          # 317 tests
+cd agent && python -m pytest tests          # 331 tests
 python benchmark/compare.py                 # classifier accuracy on the collected failures
 ```

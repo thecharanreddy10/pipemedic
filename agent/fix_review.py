@@ -70,14 +70,24 @@ def result_email(plan: dict, run_link: str, base_url: str) -> tuple[str, str, st
         head = f"The fix could not be carried out: {r.get('error', 'unknown error')}"
     elif verified == "passed":
         head = "The fix worked: the pipeline passed afterwards."
+    elif verified == "next-problem":
+        head = (f"The fix worked: '{(plan.get('diagnosis') or {}).get('failed_step')}' now passes. The pipeline then stopped at "
+                f"'{plan.get('now_fails_at')}', a different problem; PipeMedic has investigated that run separately.")
     elif verified == "failed":
         head = "The fix was carried out, but the pipeline failed again. PipeMedic will investigate the new run."
+    elif verified == "abandoned":
+        head = "The pull request was abandoned, so nothing was changed."
+    elif r.get("pr_id"):
+        head = "The pull request is open. No pipeline runs until a person completes it; then PipeMedic reports the result."
     else:
         head = "The fix was carried out. PipeMedic will report whether the pipeline passes."
     facts = []
     if r.get("pr_id"):
         facts.append(f"Pull request {r['pr_id']} into {r.get('base')}: {base_url}/pullrequest/{r['pr_id']}")
-        facts.append(f"Proving run on {r.get('branch')}: run {r.get('proving_run')}")
+        if r.get("proving_run"):
+            facts.append(f"Proving run on {r.get('branch')}: run {r.get('proving_run')}")
+        if r.get("rerun"):
+            facts.append(f"Run after the pull request was completed: run {r['rerun']}")
     if r.get("disk"):
         facts.append(f"Free disk space went from {r['disk'].get('free_mb_before')} MB to {r['disk'].get('free_mb_after')} MB.")
     if r.get("process"):
@@ -89,7 +99,9 @@ def result_email(plan: dict, run_link: str, base_url: str) -> tuple[str, str, st
     if r.get("rerun"):
         facts.append(f"Re-run: run {r['rerun']}")
     subject = f"[PipeMedic] Fix for {plan.get('pipeline')} run {plan['build_id']}: " + (
-        "worked" if verified == "passed" else "failed" if status == "failed" or verified == "failed" else "carried out")
+        "worked" if verified == "passed" else "worked, next problem found" if verified == "next-problem"
+        else "failed" if status == "failed" or verified == "failed"
+        else "abandoned" if verified == "abandoned" else "carried out")
     text = "\n".join([plan["title"], "", head, ""] + [f"  {f}" for f in facts] + ["", f"Original failed run: {run_link}",
                      f"Approved by {plan.get('decided_by')} via {plan.get('decided_via')}."])
     body = (f'<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1f2937;max-width:640px">'

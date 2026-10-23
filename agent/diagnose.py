@@ -566,6 +566,7 @@ def diagnose(failure: dict, health_records: list[dict], runner_logs: dict | None
         "pipeline_id": failure.get("pipeline_id"),
         "source_branch": failure.get("source_branch"),
         "repository": failure.get("repository"),
+        "not_reached": failure.get("not_reached", []),
         "source_version": failure.get("source_version"),
         "requested_for": failure.get("requested_for"),
         "failed_step": failure.get("failed_step"),

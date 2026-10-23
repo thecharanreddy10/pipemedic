@@ -125,6 +125,17 @@ def failure_view(d, source, bid, can_read_logs):
     for s in d["suggestions"][:4]:
         st.markdown(f"- {s}")
 
+    others, skipped = d.get("other_problems") or [], d.get("not_reached") or []
+    if others or skipped:
+        section("Other problems the pipeline did not reach")
+        for o in others:
+            st.markdown(f"- `{o['file']}` line {o['line']}: {o['message']}")
+        if not others:
+            st.markdown("No other problems found in what this commit changed.")
+        if skipped:
+            st.caption("Steps that did not run, so they were not checked: " + ", ".join(skipped)
+                       + ". The fix plan below deals only with the first failure.")
+
     rl = d.get("runner_logs") or {}
     if rl.get("available"):
         n = len(rl.get("findings", []))
@@ -153,6 +164,7 @@ def failure_view(d, source, bid, can_read_logs):
 PLAN_STATUS = {"proposed": ("info", "Waiting for approval"), "approved": ("info", "Approved, starting"), "running": ("info", "Being carried out"),
                "rejected": ("muted", "Rejected"), "superseded": ("muted", "Not needed: another plan was approved"), "failed": ("critical", "Could not be carried out")}
 VERIFIED = {"passed": ("good", "Done, and the pipeline passed"), "failed": ("critical", "Done, but the pipeline failed again"),
+            "next-problem": ("warning", "Fixed; the pipeline now stops at a later problem"),
             "pending": ("info", "Done, waiting for the pipeline result")}
 
 

@@ -49,14 +49,16 @@ def build_plans(d: dict, proposal: dict | None = None, busy_process: dict | None
             add("pipeline-pr" if pipeline else "code-pr",
                 f"Open a pull request: {proposal.get('summary', 'fix the failure')}",
                 [f"Make a branch from {_branch(d)} and commit the change to {', '.join(files)}.",
-                 f"Open a pull request into {_branch(d)} for a person to review. It is never merged automatically.",
-                 f"Run {d.get('pipeline')} on the new branch with deployment switched off (lint, tests, build) to prove the change, "
-                 "and post the result on the pull request. Nothing is deployed until the pull request is merged."],
-                "The pipeline passes on the fix branch, without deploying.", "Abandon the pull request; nothing changes until someone merges it.",
+                 f"Open a pull request into {_branch(d)} for a person to review. It is never merged automatically, and no pipeline runs on it.",
+                 f"When a person completes the pull request, {d.get('pipeline')} runs on {_branch(d)} (PipeMedic starts it if nothing else "
+                 "does) and the result is reported."],
+                f"The pipeline passes on {_branch(d)} after the pull request is completed.",
+                "Abandon the pull request; nothing changes until someone completes it.",
                 ("Changes a pipeline file. " if pipeline else "") + (proposal.get("risk") or ""),
                 changes=[{**c, "old_content": (proposal.get("old_contents") or {}).get(c["path"], "")} for c in proposal["changes"]],
                 explanation=proposal.get("explanation", ""), confidence=proposal.get("confidence", ""),
-                diagnosis={k: d.get(k) for k in ("category", "verdict", "failed_step", "root_cause", "repository")})
+                diagnosis={**{k: d.get(k) for k in ("category", "verdict", "failed_step", "root_cause", "repository")},
+                           "other_problems_text": [f"{o['file']} line {o['line']}: {o['message']}" for o in d.get("other_problems") or []]})
         elif category in CODE_CATEGORIES:
             add("manual", "A person changes the code", [s for s in d.get("suggestions", [])[:3]],
                 "The next run passes.", "Nothing to undo.", "No automatic change.",

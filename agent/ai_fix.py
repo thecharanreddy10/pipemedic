@@ -245,8 +245,10 @@ def pr_text(d: dict, proposal: dict, run_link: str) -> tuple[str, str]:
             + "\n".join(f"- `{c['path']}` ({c['action']})" for c in proposal["changes"])
             + ("\n\n**Check new files carefully:** their contents were written by an AI. Replace every REPLACE_ME "
                "and confirm any other value before merging." if any(c["action"] == "create" for c in proposal["changes"]) else "")
-            + "\n\nThe pipeline runs on this branch with deployment switched off (lint, tests and the build), and its result is posted "
-              "below. Nothing is deployed until this pull request is merged. PipeMedic never merges pull requests.")
+            + ("\n\n**Other problems PipeMedic found in this commit, which this pull request does not fix:**\n"
+               + "\n".join(f"- {o}" for o in d.get("other_problems_text", [])) if d.get("other_problems_text") else "")
+            + "\n\nNo pipeline runs on this branch. When a person completes this pull request, the pipeline runs on the target branch "
+              "and PipeMedic posts its result. PipeMedic never merges pull requests.")
     return title, body
 
 
@@ -322,26 +324,13 @@ def open_fix_pr(ado, llm, d: dict, run_link: str, store=None, dry_run: bool = Tr
     branch = f"pipemedic/fix-run-{d['build_id']}"
     ado.create_branch_with_commit(branch, proposal["changes"], title, base=base)
     pr_id = ado.create_pull_request(branch, title, body, target=base)
-    verify = queue_proving_run(ado, d["pipeline_id"], f"refs/heads/{branch}")
-    ado.comment_on_pull_request(pr_id, f"PipeMedic ran the pipeline on this branch without deploying: run {verify}. The result will be "
-                                       "posted here. The environment changes only when this pull request is merged.")
+    ado.comment_on_pull_request(pr_id, f"No pipeline has run on this change. When this pull request is completed, the pipeline runs on "
+                                       f"{base} and PipeMedic posts the result here.")
     if store is not None:
-        store.record_fix({"build_id": d["build_id"], "pipeline": d["pipeline"], "pr_id": pr_id, "verify_build": verify,
-                          "branch": branch, "title": title[:120], "status": "open", "verified": "pending", "time": now.isoformat(),
+        store.record_fix({"build_id": d["build_id"], "pipeline": d["pipeline"], "pr_id": pr_id, "verify_build": None,
+                          "branch": branch, "title": title[:120], "status": "open", "verified": "after-merge", "time": now.isoformat(),
                           "files": [c["path"] for c in proposal["changes"]], "signature": signature, "base": base})
-    return {"status": "opened", "pr_id": pr_id, "verify_build": verify, "branch": branch, "base": base, "proposal": proposal, "title": title}
-
-
-def queue_proving_run(ado, pipeline_id: int, ref: str) -> int:
-    """Run the pipeline on the fix branch with deployment switched off, so an unreviewed change is tested and built but never
-    deployed. A pipeline without a `deploy` parameter refuses it; that one is run as it is, and its own rules decide."""
-    import requests
-    try:
-        return ado.queue_run(pipeline_id, ref, {"deploy": "false"})
-    except requests.HTTPError as e:
-        if e.response is None or e.response.status_code != 400:
-            raise
-        return ado.queue_run(pipeline_id, ref)
+    return {"status": "opened", "pr_id": pr_id, "verify_build": None, "branch": branch, "base": base, "proposal": proposal, "title": title}
 
 
 def check_fix_verifications(ado, store) -> list[str]:

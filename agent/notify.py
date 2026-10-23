@@ -40,6 +40,12 @@ def render_email(d: dict, url: str, actions: list[str] | None = None) -> tuple[s
         lines += ["Evidence:"] + [f"  {e}" for e in evidence] + [""]
     if fixes:
         lines += ["What to do:"] + [f"  {i}. {f}" for i, f in enumerate(fixes, 1)] + [""]
+    others, skipped = d.get("other_problems") or [], d.get("not_reached") or []
+    if others:
+        lines += ["Other problems in this commit that the pipeline did not reach (the fix below deals only with the first):"] + [
+            f"  - {o['file']} line {o['line']}: {o['message']}" for o in others] + [""]
+    if skipped:
+        lines += [f"Steps that did not run, so they were not checked: {', '.join(skipped)}", ""]
     if similar:
         lines += [f"Seen before: {similar['summary']}", ""]
     if ai:
@@ -74,6 +80,12 @@ def render_email(d: dict, url: str, actions: list[str] | None = None) -> tuple[s
         body += f'<p><b>Evidence</b></p><pre style="background:#f3f4f6;padding:8px;white-space:pre-wrap">{e(chr(10).join(evidence))}</pre>'
     if fixes:
         body += f"<p><b>What to do</b></p><ol>{li(fixes)}</ol>"
+    if others:
+        body += ('<div style="border-left:4px solid #c27c0e;background:#fdf8ec;padding:8px 12px;margin:12px 0"><b>Other problems in this '
+                 'commit that the pipeline did not reach</b> (the fix deals only with the first)<ul style="margin:6px 0">'
+                 + "".join(f"<li>{e(o['file'])} line {o['line']}: {e(o['message'])}</li>" for o in others) + "</ul></div>")
+    if skipped:
+        body += f'<p style="color:#6b7280">Steps that did not run, so they were not checked: {e(", ".join(skipped))}</p>'
     if similar:
         body += f'<p><b>Seen before:</b> {e(similar["summary"])}</p>'
     if ai:

@@ -118,13 +118,14 @@ class Config:
 
 class Watcher:
     def __init__(self, cfg: Config, ado, store, health_fetch=fetch_health, llm=None, mailer=None,
-                 collect=collect_failure, now=None, runner_log_fetch=None, process_fetch=None, resource_check=None):
+                 collect=collect_failure, now=None, runner_log_fetch=None, process_fetch=None, resource_check=None, look_ahead=None):
         self.cfg, self.ado, self.store = cfg, ado, store
         self._env_override = cfg.notify_override_to
         self.health_fetch, self.llm, self.mailer, self.collect = health_fetch, llm, mailer, collect
         self.runner_log_fetch = runner_log_fetch  # (hostname, start, finish) -> runner_logs.collect() result
         self.process_fetch = process_fetch  # hostname -> the runner's busiest processes (runner_actions.top_processes)
         self.resource_check = resource_check  # (name, type) -> whether that Azure resource exists, as PipeMedic can see
+        self.look_ahead = look_ahead  # diagnosis -> other problems in the commit that the pipeline did not reach
         self._now = now or (lambda: datetime.now(timezone.utc))
         self.hosts: dict = {}
         self.recent: list[dict] = []
@@ -360,6 +361,12 @@ class Watcher:
                 d["ai"] = {"error": str(e)[:200]}
             d = apply_ai(d, d.get("ai"))
 
+        if self.look_ahead is not None and d.get("source_version"):
+            self._stage(bid, "looking for other problems")
+            try:  # the pipeline stopped at the first error; problems in later steps would only show on the next run
+                d["other_problems"] = run_with_timeout(lambda d=d: self.look_ahead(d), EMAIL_TIMEOUT_S)
+            except Exception:
+                log.exception("could not look for other problems in run %s", bid)
         named = azure_resource_named(d)
         if named and self.resource_check is not None:
             try:  # "not found" is also what Azure says to an identity with no role on the resource; look for it ourselves
@@ -495,11 +502,28 @@ def build_watcher() -> Watcher:
         from notify import send_email
         mailer = lambda to, subject, text, body: send_email(  # noqa: E731
             cfg.notify_endpoint, cfg.notify_from, to, subject, text, body, cred)
-    return Watcher(cfg, AzureDevOps(cfg.org, cfg.project, credential=cred), store,
+    ado = AzureDevOps(cfg.org, cfg.project, credential=cred)
+    return Watcher(cfg, ado, store,
                    llm=FoundryLLM() if cfg.ai_on else None, mailer=mailer,
                    runner_log_fetch=lambda host, start, finish: runner_logs.collect(cred, host, start, finish),
                    process_fetch=lambda host: runner_actions.top_processes(cred, host),
-                   resource_check=lambda name, rtype: remediate.arm_resource_exists(cfg_base.subscription_id, name, rtype, cred))
+                   resource_check=lambda name, rtype: remediate.arm_resource_exists(cfg_base.subscription_id, name, rtype, cred),
+                   look_ahead=lambda d: look_ahead_in_azure(ado, d, cfg_base.subscription_id, cred))
+
+
+def look_ahead_in_azure(ado, d: dict, subscription: str, cred) -> list[dict]:
+    """Check what the failed commit changed since the pipeline last passed, for problems later steps would hit."""
+    import lookahead
+
+    repo = ado.with_repo(d["repository"]) if d.get("repository") else ado
+    good = ado.last_passing_commit(d["pipeline_id"])
+    if not good or good == d["source_version"]:
+        return []
+    changed = repo.changed_files(good, d["source_version"])
+    failure_text = "\n".join(d.get("evidence", [])) + "\n" + (d.get("log_excerpt") or "")
+    registry = lambda name: remediate.arm_resource_exists(subscription, name, "Microsoft.ContainerRegistry/registries", cred)  # noqa: E731
+    return lookahead.look_ahead(changed, lambda p: repo.read_file(p, commit=d["source_version"]), failure_text,
+                                lookahead.pypi_exists, lookahead.hub_exists, registry)
 
 
 def run_once() -> dict:

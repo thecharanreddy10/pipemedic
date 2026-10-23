@@ -32,11 +32,12 @@ commits on `demo/*` branches: run the pipeline on the branch with no scenario.
 | Wrong registry name in the pipeline | branch `demo/wrong-registry` | Sign in to the registry | No registry by that name exists (109) | Pull request to the pipeline file fixing `ACR_NAME` |
 | App listens on 8080, Container Apps sends traffic to 8000 | branch `demo/wrong-port` | Wait for the revision | The new revision did not start; its start-up probe failed (98) | Pull request back to port 8000. Approved: PR 9, proving run 100 passed |
 | Required setting missing, so the app stops at start-up | branch `demo/missing-setting` | Wait for the revision | The new revision did not start (103) | Pull request restoring `WEATHER_MODE=live` |
+| Three bugs at once: the formula, `python:3.99-slim`, and a misspelt registry | branch `demo/several-bugs` | Unit tests | Test failure (121); also lists the base image and the registry as problems the pipeline did not reach | Pull request fixing only the formula. After it was completed, run 122 passed the tests and stopped at the base image, as predicted |
 
 PipeMedic tells "wrong name" and "no access" apart by checking whether the named resource exists. Code fixes are written with the
 same files from the pipeline's last passing run in view, so they restore what worked rather than invent a new value.
 
-After a demo, abandon the fix pull request instead of merging it, so the branch keeps its defect.
+A fix pull request runs nothing until a person completes it; then the pipeline runs on its branch. After a demo, abandon the fix pull request instead of completing it, so the branch keeps its defect.
 
 ## Run it locally
 

@@ -232,7 +232,8 @@ def test_an_approved_pull_request_plan_opens_exactly_the_approved_change_into_th
     assert r["ok"], r
     assert ado.branches == [("pipemedic/fix-run-70", "demo/test-failure", ["services/inventory/app/main.py"])]
     assert ado.prs[0][1] == "demo/test-failure"
-    assert store.plans["70-1"]["result"]["pr_id"] == 31 and store.plans["70-1"]["result"]["proving_run"] == 501
+    assert store.plans["70-1"]["result"]["pr_id"] == 31 and "proving_run" not in store.plans["70-1"]["result"]
+    assert ado.queued == []  # nothing runs until a person completes the pull request
 
 
 def test_a_runner_action_that_fails_is_recorded_and_nothing_is_rerun(monkeypatch):
@@ -360,3 +361,85 @@ def test_the_result_email_status_is_kept_on_the_plan():
     assert sent[0][0] == "dev@example.com" and sent[0][1].endswith("worked")
     assert store.plans["70-1"]["result_email"] == "Succeeded" and "passed" in told[0]
     assert fix_executor.verify_pending(w) == []  # reported once
+
+
+class PrAdo(FakeAdo):
+    """A pull request whose state the test sets, and pipeline runs found by commit."""
+    def __init__(self, pr):
+        super().__init__()
+        self.pr, self.by_commit = pr, {}
+
+    def with_repo(self, repo):
+        self.repo = repo
+        return self
+
+    def pull_request(self, pr_id):
+        return self.pr
+
+    def run_for_commit(self, pipeline_id, branch, commit):
+        return self.by_commit.get((branch, commit))
+
+
+def _pr_plan():
+    plan = {**fixplan.build_plans(diag(), proposal(), now=NOW)[0], "status": "done", "verified": "pending"}
+    plan["result"] = {"pr_id": 31, "branch": "pipemedic/fix-run-70", "base": "demo/test-failure", "repository": "weather-app"}
+    return plan
+
+
+def test_nothing_happens_while_the_pull_request_is_open():
+    store, ado = FakeStore([_pr_plan()]), PrAdo({"status": "active"})
+    assert fix_executor.check_results(ado, store, now=NOW) == [] and ado.queued == []
+    assert ado.repo == "weather-app"
+
+
+def test_after_the_pull_request_is_completed_the_branchs_own_run_is_followed():
+    store = FakeStore([_pr_plan()])
+    ado = PrAdo({"status": "completed", "lastMergeCommit": {"commitId": "m1"}, "closedDate": "2026-10-20T11:59:00.1234567Z"})
+    ado.by_commit[("refs/heads/demo/test-failure", "m1")] = {"id": 640}
+    fix_executor.check_results(ado, store, now=NOW)
+    assert store.plans["70-1"]["result"]["rerun"] == 640 and ado.queued == []
+    ado.builds[640] = {"status": "completed", "result": "succeeded"}
+    assert fix_executor.check_results(ado, store, now=NOW)[0]["verified"] == "passed"
+
+
+def test_a_completed_pull_request_with_no_run_on_its_branch_gets_one_after_a_grace_period():
+    store = FakeStore([_pr_plan()])
+    ado = PrAdo({"status": "completed", "lastMergeCommit": {"commitId": "m1"}, "closedDate": "2026-10-20T11:59:00Z"})
+    fix_executor.check_results(ado, store, now=NOW)  # one minute after the merge: the branch's trigger may still start it
+    assert ado.queued == []
+    fix_executor.check_results(ado, store, now=NOW + timedelta(minutes=5))
+    assert ado.queued == [(9, "refs/heads/demo/test-failure")] and store.plans["70-1"]["result"]["rerun"] == 501
+
+
+def test_an_abandoned_pull_request_is_reported_and_nothing_runs():
+    store, ado = FakeStore([_pr_plan()]), PrAdo({"status": "abandoned"})
+    known = fix_executor.check_results(ado, store, now=NOW)
+    assert known[0]["verified"] == "abandoned" and ado.queued == []
+    import fix_review
+    subject, text, _ = fix_review.result_email({**known[0], "decided_by": "a", "decided_via": "dashboard"}, "https://run", "https://repo")
+    assert subject.endswith("abandoned") and "nothing was changed" in text
+
+
+def test_a_fix_that_works_but_reveals_the_next_problem_is_reported_as_such():
+    store = FakeStore([_pr_plan()])
+    ado = PrAdo({"status": "completed", "lastMergeCommit": {"commitId": "m1"}, "closedDate": "2026-10-20T11:00:00Z"})
+    ado.by_commit[("refs/heads/demo/test-failure", "m1")] = {"id": 640}
+    fix_executor.check_results(ado, store, now=NOW)
+    ado.builds[640] = {"status": "completed", "result": "failed"}
+    ado.timeline = lambda run_id: [{"type": "Task", "name": "Unit tests", "result": "succeeded"},
+                                   {"type": "Task", "name": "Build the image", "result": "failed"}]
+    plan = fix_executor.check_results(ado, store, now=NOW)[0]
+    assert plan["verified"] == "next-problem" and plan["now_fails_at"] == "Build the image"
+    import fix_review
+    subject, text, _ = fix_review.result_email({**plan, "decided_by": "a", "decided_via": "dashboard"}, "https://run", "https://repo")
+    assert subject.endswith("worked, next problem found") and "'Unit tests' now passes" in text and "'Build the image'" in text
+
+
+def test_the_same_step_failing_again_is_a_failed_fix():
+    store = FakeStore([_pr_plan()])
+    ado = PrAdo({"status": "completed", "lastMergeCommit": {"commitId": "m1"}, "closedDate": "2026-10-20T11:00:00Z"})
+    ado.by_commit[("refs/heads/demo/test-failure", "m1")] = {"id": 640}
+    fix_executor.check_results(ado, store, now=NOW)
+    ado.builds[640] = {"status": "completed", "result": "failed"}
+    ado.timeline = lambda run_id: [{"type": "Task", "name": "Unit tests", "result": "failed"}]
+    assert fix_executor.check_results(ado, store, now=NOW)[0]["verified"] == "failed"

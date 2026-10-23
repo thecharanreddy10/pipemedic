@@ -22,6 +22,7 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 import config
+import lookahead
 
 from diagnose import _parse_ts, apply_ai, diagnose, summarize_health
 from ai_diagnose import ai_diagnose
@@ -139,6 +140,19 @@ class AzureDevOps:
 
     def pull_request(self, pr_id: int) -> dict:
         return self._get(f"{self._repo()}/pullrequests/{pr_id}").json()
+
+    def changed_files(self, base_commit: str, target_commit: str) -> list[str]:
+        """Files added or edited between two commits of this repository."""
+        r = self._get(f"{self._repo()}/diffs/commits", baseVersion=base_commit, baseVersionType="commit",
+                      targetVersion=target_commit, targetVersionType="commit", **{"$top": 200}).json()
+        return [c["item"]["path"].lstrip("/") for c in r.get("changes", [])
+                if not c["item"].get("isFolder") and "delete" not in str(c.get("changeType", "")).lower()]
+
+    def run_for_commit(self, pipeline_id: int, branch: str, commit: str) -> dict | None:
+        """The pipeline's run of this commit on this branch, if there is one."""
+        runs = self._get(f"{self.base}/{self.project}/_apis/build/builds", definitions=pipeline_id, branchName=branch,
+                         queryOrder="queueTimeDescending", **{"$top": 20}).json()["value"]
+        return next((b for b in runs if b.get("sourceVersion") == commit), None)
 
     # ---- browsing: what an organization contains ----
     def projects(self) -> list[dict]:
@@ -287,6 +301,7 @@ def collect_failure(ado: AzureDevOps, build: dict, hosts: dict) -> dict:
         "issues": issues,
         "log_text": log,
         "other_logs": "\n".join(others)[-4000:],
+        "not_reached": lookahead.not_reached(records),
         "agent_name": agent_name,
         "hostname": hosts.get(agent_name) if agent_name else None,
         "start": build.get("startTime"),

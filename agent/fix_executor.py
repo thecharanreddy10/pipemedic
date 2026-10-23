@@ -68,7 +68,7 @@ def carry_out(plan: dict, ado, store, credential, pool: str, run_link: str, now:
                             run_link, store=store, dry_run=False, allow_pipeline=kind == "pipeline-pr", proposal=proposal, now=now)
             if r.get("status") != "opened":
                 raise RuntimeError(r.get("detail") or r.get("status"))
-            result = {"pr_id": r["pr_id"], "branch": r["branch"], "base": r.get("base"), "proving_run": r["verify_build"]}
+            result = {"pr_id": r["pr_id"], "branch": r["branch"], "base": r.get("base"), "repository": diag.get("repository")}
         else:
             if kind == "clean-disk":
                 result["disk"] = json.loads(ra.run_script(credential, host, ra.CLEAN_DISK) or "{}")
@@ -97,18 +97,64 @@ def carry_out(plan: dict, ado, store, credential, pool: str, run_link: str, now:
         return {"ok": False, "detail": str(e)[:300], **result}
 
 
-def check_results(ado, store) -> list[dict]:
-    """For finished plans: did the re-run (or the pull request's proving run) pass? Returns the plans whose result is now known."""
+def _when(iso: str | None) -> datetime | None:
+    """An Azure DevOps time (up to seven decimal places, ending in Z)."""
+    import re
+    return datetime.fromisoformat(re.sub(r"(\.\d{6})\d+", r"\1", iso).replace("Z", "+00:00")) if iso else None
+
+
+MERGE_GRACE_S = 180  # after a PR is completed, how long the branch's own trigger gets to start the pipeline before PipeMedic does
+
+
+def _follow_pr(ado, store, plan: dict, now: datetime) -> dict | None:
+    """A pull-request plan: nothing runs until a person completes the PR. Then find the pipeline's run of the merge on the target
+    branch, or start one if the branch has no trigger. Returns the plan when its outcome is final without a run (abandoned)."""
+    r = plan["result"]
+    repo = ado.with_repo(r["repository"]) if r.get("repository") and hasattr(ado, "with_repo") else ado
+    pr = repo.pull_request(r["pr_id"])
+    if pr.get("status") == "abandoned":
+        return store.update_plan(plan["build_id"], plan["plan_id"], verified="abandoned")
+    if pr.get("status") != "completed":
+        return None
+    merge = (pr.get("lastMergeCommit") or {}).get("commitId")
+    ref = f"refs/heads/{r.get('base') or 'main'}"
+    run = ado.run_for_commit(plan["pipeline_id"], ref, merge) if merge else None
+    if run is None:
+        closed = _when(pr.get("closedDate"))
+        if closed and (now - closed).total_seconds() < MERGE_GRACE_S:
+            return None
+        run = {"id": ado.queue_run(plan["pipeline_id"], ref)}
+    store.update_plan(plan["build_id"], plan["plan_id"], result={**r, "merged_commit": merge, "rerun": run["id"]})
+    return None
+
+
+def check_results(ado, store, now: datetime | None = None) -> list[dict]:
+    """For finished plans: did the re-run (or, for a pull request, the run after it was completed) pass? Returns the plans whose
+    result is now known."""
+    now = now or datetime.now(timezone.utc)
     known = []
     for plan in store.plans_to_verify():
-        run_id = (plan.get("result") or {}).get("rerun") or (plan.get("result") or {}).get("proving_run")
+        r = plan.get("result") or {}
+        if r.get("pr_id") and not r.get("rerun"):
+            final = _follow_pr(ado, store, plan, now)
+            if final:
+                known.append(final)
+            continue
+        run_id = r.get("rerun") or r.get("proving_run")
         if not run_id:
             continue
         b = ado.build(run_id)
         if b.get("status") != "completed":
             continue
-        verified = "passed" if b.get("result") == "succeeded" else "failed"
-        known.append(store.update_plan(plan["build_id"], plan["plan_id"], verified=verified))
+        if b.get("result") == "succeeded":
+            known.append(store.update_plan(plan["build_id"], plan["plan_id"], verified="passed"))
+            continue
+        # It failed. If the step that failed before now passes and a later one fails, the fix worked and the run reached the next problem.
+        fixed_step = (plan.get("diagnosis") or {}).get("failed_step")
+        failed_now = [t["name"] for t in ado.timeline(run_id) if t.get("type") == "Task" and t.get("result") == "failed"]
+        moved_on = bool(fixed_step and failed_now and fixed_step not in failed_now)
+        known.append(store.update_plan(plan["build_id"], plan["plan_id"], verified="next-problem" if moved_on else "failed",
+                                       now_fails_at=failed_now[0] if failed_now else None))
     return known
 
 
